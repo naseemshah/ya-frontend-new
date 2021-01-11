@@ -131,7 +131,7 @@ export default ManageDAOModal;
 
 let Modal = styled.div`
     width: 450px;
-    height: 80vh;
+    height: fit-content;
     position: fixed;
     top: 50%;
     left: 50%;
