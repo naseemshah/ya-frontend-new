@@ -62,7 +62,6 @@ function Wallet({ user }: {user: string}) {
         getBalanceBonded(ESDS.addr, user),
         getStatusOf(ESDS.addr, user),
         getPoolAddress(),
-
         getFluidUntil(ESDS.addr, user),
         getLockedUntil(ESDS.addr, user),
       ]);

@@ -142,6 +142,7 @@ let Modal = styled.div`
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 80px rgba(0, 0, 0, 0.323);
+    z-index: 50;
     .yai-modal-header{
         display: flex;
         justify-content: space-between;

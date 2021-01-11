@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import styled from 'styled-components'
-
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import {Link} from 'react-router-dom'
+import { HashRouter as Router, Switch, Route, Redirect} from 'react-router-dom';
 import { Main, Layout } from '@aragon/ui';
 import { UseWalletProvider } from 'use-wallet';
 import { updateModalMode } from './utils/web3';
@@ -86,16 +86,39 @@ function App() {
                 <Route path="/regulation/"><Regulation user={user}/></Route>
                 <Route path="/pool/:override"><Pool user={user}/></Route>
                 <Route path="/pool/"><Pool user={user}/></Route>
-                <Route path="/"><HomePage user={user}/></Route>
+                {/* <Route path="/"><HomePage user={user}/></Route> */}
+                <Route path="/"><Redirect to="/dashboard" /></Route>
+                
               </Switch>
               :<Switch>
-                <Route path="/"><HomePageNoWeb3/></Route>
+                <Route path="/"><Redirect to="/dashboard" /></Route>
+
+                {/* <Route path="/"><HomePageNoWeb3/></Route> */}
               </Switch>
           }
           
           <div style={{height: '128px', width: '100%'}}/>
         </StyledBackground>
         </Main>
+        <YaiFooter>
+          <div className="yai-foooter-social-container">
+              <Link to="#">
+                <i className="fab fa-github fa-2x"/>
+              </Link>
+              <Link to="#">
+                <i className="fab fa-twitter fa-2x"/>
+              </Link>
+              <Link to="#">
+                <i className="fab fa-medium fa-2x"/>
+              </Link>
+              <Link to="#">
+                <i className="fab fa-telegram fa-2x"/>
+              </Link>
+              <Link to="#">
+                <i className="fab fa-discord fa-2x"/>
+              </Link>
+          </div>
+        </YaiFooter>
       </UseWalletProvider>
     </Router>
   );
@@ -106,9 +129,24 @@ export default App;
 
 let StyledBackground = styled.div`
   background-color: #F40136;
-  background-image: url('/headerimage.png');
+  /* background-image: url('/headerimage.png'); */
   background-position: top;
   background-repeat: no-repeat;
-  background-size: auto 500px;
+  background-size: 100%;
+  
 `
-
+let YaiFooter = styled.div`
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  opacity: 0;
+  background-color: white;
+  /* box-shadow: 0 0 50px rgba(0, 0, 0, 0.329); */
+  i{
+    margin-right: 10px;
+    padding: 10px;
+  }
+  :hover{
+    opacity: 1;
+  } 
+`

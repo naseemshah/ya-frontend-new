@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js';
 import yaiLogo from '../common/yai-logo.svg'
+import headerImage from './headerimage.png'
 import {
   getBalanceBonded,
   getBalanceOfStaged, getFluidUntil, getLockedUntil,
@@ -236,7 +237,8 @@ function Dashboard({ user }: {user: string}) {
   return (
     <>
       <StyledDashboardInfo>
-        <img src={yaiLogo} alt="YAI Logo"/>
+        <img className="headerImage" src={headerImage} alt="YAI Logo"/>
+        <img style={{zIndex:2}} src={yaiLogo} alt="YAI Logo"/>
         <div className="yai-dash-total-container">
           <p className="yai-dash-total-title">YAI TOTAL SUPPLY</p>
           <p className="yai-dash-total-value">---,---,---</p>
@@ -389,6 +391,15 @@ let StyledDashboardInfo = styled.section`
   margin-right: auto;
   flex-direction: column;
   color: white;
+  position: relative;
+  .headerImage{
+    position: absolute;
+    left: 0;
+    top: 0;
+    /* transform: translateX(-50%); */
+    z-index: 1;
+    width: 100%;
+  }
   .yai-dash-total-container{
     display: flex;
     margin-left: auto;
@@ -397,6 +408,8 @@ let StyledDashboardInfo = styled.section`
     max-width: 1500px;
     justify-content: center;
     flex-direction: column;
+    z-index: 2;
+
   
     .yai-dash-total-title{
       font-size: 25px;
