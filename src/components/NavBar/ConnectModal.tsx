@@ -33,7 +33,7 @@ function ConnectModal({
   }, [wallet, onConnect, onClose]);
 
   return (
-    <Modal visible={visible} onClose={onClose}>
+    <Modal visible={visible} onClose={onClose} className="YaiModal">
       <Header primary="Select a wallet provider" />
 
       <div style={{width: '50%', margin: 'auto', padding: '1%'}}>

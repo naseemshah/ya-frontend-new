@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import styled from 'styled-components'
 
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { Main, Layout } from '@aragon/ui';
@@ -8,7 +9,6 @@ import { storePreference, getPreference } from './utils/storage';
 import NavBar from './components/NavBar';
 import HomePage from './components/HomePage';
 import Trade from './components/Trade/index';
-import Footer from './components/Footer';
 import Wallet from "./components/Wallet";
 import EpochDetail from "./components/EpochDetail";
 import CouponMarket from "./components/CouponMarket";
@@ -17,6 +17,8 @@ import Candidate from "./components/Candidate";
 import Regulation from "./components/Regulation";
 import Pool from "./components/Pool";
 import HomePageNoWeb3 from "./components/HomePageNoWeb3";
+
+import Dashboard from "./components/Dashboard/index";
 
 function App() {
   const storedTheme = getPreference('theme', 'light');
@@ -64,12 +66,14 @@ function App() {
           }
         }}
       >
-        <Main assetsUrl={`${process.env.PUBLIC_URL}/aragon-ui/`} theme={theme} layout={false}>
+        <Main assetsUrl={`${process.env.PUBLIC_URL}/aragon-ui/`}  theme={theme} layout={false}>
+          <StyledBackground>
           <NavBar hasWeb3={hasWeb3} user={user} setUser={setUser} />
-          <Layout>
+          
           {
             hasWeb3 ?
               <Switch>
+                <Route path="/dashboard/"><Dashboard user={user}/></Route>
                 <Route path="/dao/:override"><Wallet user={user}/></Route>
                 <Route path="/dao/"><Wallet user={user}/></Route>
                 <Route path="/epoch/"><EpochDetail user={user}/></Route>
@@ -83,14 +87,13 @@ function App() {
                 <Route path="/pool/"><Pool user={user}/></Route>
                 <Route path="/"><HomePage user={user}/></Route>
               </Switch>
-              :
-              <Switch>
+              :<Switch>
                 <Route path="/"><HomePageNoWeb3/></Route>
               </Switch>
           }
-          </Layout>
+          
           <div style={{height: '128px', width: '100%'}}/>
-          <Footer hasWeb3={hasWeb3} theme={theme} updateTheme={updateTheme}/>
+        </StyledBackground>
         </Main>
       </UseWalletProvider>
     </Router>
@@ -99,3 +102,12 @@ function App() {
 
 
 export default App;
+
+let StyledBackground = styled.div`
+  background-color: #F40136;
+  background-image: url('/headerimage.png');
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: auto 500px;
+`
+
