@@ -12,7 +12,7 @@ import Trade from './components/Trade/index';
 import Wallet from "./components/Wallet";
 import EpochDetail from "./components/EpochDetail";
 import CouponMarket from "./components/CouponMarket";
-import Governance from "./components/Governance";
+import GovernanceNew from "./components/GovernanceNew";
 import Candidate from "./components/Candidate";
 import Regulation from "./components/Regulation";
 import Pool from "./components/Pool";
@@ -79,8 +79,9 @@ function App() {
                 <Route path="/epoch/"><EpochDetail user={user}/></Route>
                 <Route path="/coupons/:override"><CouponMarket user={user}/></Route>
                 <Route path="/coupons/"><CouponMarket user={user}/></Route>
-                <Route path="/governance/candidate/:candidate"><Candidate user={user}/></Route>
-                <Route path="/governance/"><Governance user={user}/></Route>
+                {/* <Route path="/governance/candidate/:candidate"><Candidate user={user}/></Route> */}
+                <Route path="/governance/"><GovernanceNew user={user}/></Route>
+                {/* <Route path="/governance/"><Governance user={user}/></Route> */}
                 <Route path="/trade/"><Trade user={user}/></Route>
                 <Route path="/regulation/"><Regulation user={user}/></Route>
                 <Route path="/pool/:override"><Pool user={user}/></Route>
