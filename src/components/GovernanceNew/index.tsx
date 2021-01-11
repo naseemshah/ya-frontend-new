@@ -8,15 +8,21 @@ function Governance({ user }: {user: string}) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '90vh'
-
+        height: '99vh',
+        fontFamily: 'Roboto',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        width: '100%',
+        maxWidth: '1500px'
       }}
     >
       <h1 style={
         {
-          fontSize: '30px',
+          fontSize: '48px',
           color: 'white',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          fontFamily: 'Roboto'
+
         }
       }>Coming Soon</h1>
     </div>

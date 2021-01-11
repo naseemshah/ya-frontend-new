@@ -36,29 +36,33 @@ function ConnectButton({ hasWeb3, user, setUser }: connectButtonProps) {
     <div style={{display: 'flex'}}>
       <div style={{flex: '1'}}/>
       <div>
-        <Box padding={4} style={{width: '192px'}}>
-          <div style={{display: 'flex'}}>
-            <div>
-              <LinkBase onClick={disconnectWeb3} style={{marginRight: '8px', height: '24px'}}>
+        <Box padding={5} style={{width: '192px', borderRadius: 10}}>
+          <div style={{display: 'flex',justifyContent: 'space-between',alignItems: 'center'}}>
+            <LinkBase onClick={disconnectWeb3} style={{marginRight: '8px', height: '24px'}}>
                 <IconPower />
-              </LinkBase>
-            </div>
-            <div style={{flex: '1', textAlign: 'right'}}>
-              <IdentityBadge entity={user} />
-            </div>
+            </LinkBase>
+            <IdentityBadge entity={user} />
           </div>
-          <div style={{display: 'flex'}}>
-            <div style={{flex: '1', textAlign: 'right'}}>
-              <TotalBalance user={user} />
-            </div>
-          </div>
+          <TotalBalance user={user} />
+          {/* <div>
+            {user.substring(0,5)+"..."+user.substring(user.length-5,user.length)}
+          </div> */}
+          
         </Box>
       </div>
     </div>
   ) : (
     <>
       <ConnectModal visible={isModalOpen} onClose={toggleModal} onConnect={connectWeb3}/>
-      <Button icon={<IconConnect />} label="Connect" onClick={toggleModal} disabled={!hasWeb3}/>
+      {/* <Button icon={<IconConnect />} label="Connect" onClick={toggleModal} disabled={!hasWeb3}/> */}
+      <Box padding={5} style={{width: 'fit-content', padding: '5px', borderRadius: 10}}>
+          <div 
+            onClick={toggleModal}
+            style={{display: 'flex',justifyContent: 'center',alignItems: 'center', cursor: 'pointer'}}>
+          <IconConnect />Connect
+          </div>
+          
+        </Box>
     </>
   );
 }

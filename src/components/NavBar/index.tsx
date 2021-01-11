@@ -1,8 +1,10 @@
 import React from 'react';
 import { NavLink} from 'react-router-dom';
+import styled from 'styled-components'
 
 import { LinkBase, useTheme } from '@aragon/ui';
 import ConnectButton from './ConnectButton';
+import { getAutomaticTypeDirectiveNames } from 'typescript';
 
 type NavbarProps = {
   hasWeb3: boolean;
@@ -19,16 +21,21 @@ function NavBar({ hasWeb3, user, setUser }: NavbarProps) {
       <div
         style={{
           borderTop: 'none',
-          backgroundColor: 'rgba(0,0,0,0)',
+          // backgroundColor: '#F40136',
           textAlign: 'center',
           height: 'fit-content',
           width: '100%',
+          maxWidth: '1500px',
           fontSize: '14px',
-          paddingBottom: '10px'
+          paddingBottom: '10px',
+          zIndex: 2,
+          marginLeft: 'auto',
+          marginRight:  'auto',
         }}
-      >
+      > 
+        <StyledWrapper>
         <div style={{ maxWidth: '1100px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <div style={{ display: 'flex', paddingTop: '24px', justifyContent: "space-between" }}>
+          <div className="nav-container" style={{ display: 'flex', paddingTop: '24px', justifyContent: "space-between" }}>
             <div style={{ width: '20%', textAlign: 'left'}}>
               <NavLink to="/" component={LinkBase} style={{ marginRight: '16px', height: '40px' }}>
                 {/* <img src={logoUrl} height="40px" alt="Empty Set Dollar" /> */}
@@ -52,11 +59,12 @@ function NavBar({ hasWeb3, user, setUser }: NavbarProps) {
               {/* <Link to="/dashboard"></Link> */}
 
             </div>
-            <div style={{textAlign: 'right', marginRight: '10px' }}>
+            <div className="yai-connect-button" style={{textAlign: 'right', marginRight: '10px' }}>
               <ConnectButton hasWeb3={hasWeb3} user={user} setUser={setUser} />
             </div>
           </div>
         </div>
+        </StyledWrapper>
       </div>
     </>
   );
@@ -91,3 +99,17 @@ function LinkButton({ title, to }: linkButtonProps) {
 }
 
 export default NavBar;
+
+
+let StyledWrapper = styled.div`
+  .nav-container{
+    @media only screen and (max-width: 550px) {
+      flex-direction: column;
+      align-items: center;
+      padding-top: 0!important;
+      .yai-connect-button{
+        margin-top: 20px;
+      }
+    }
+  }
+`

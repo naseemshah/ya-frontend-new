@@ -84,7 +84,7 @@ function TotalBalance({ user }: TotalBalanceProps) {
 
   return (
     <div style={{ fontSize: 14, padding: 3, fontWeight: 400, lineHeight: 1.5, fontFamily: 'aragon-ui-monospace, monospace'}}>
-      ∅{formatBN(totalBalance, 2)}
+      {formatBN(totalBalance, 2)} YAI
     </div>
   );
 }

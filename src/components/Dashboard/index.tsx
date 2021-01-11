@@ -237,7 +237,7 @@ function Dashboard({ user }: {user: string}) {
   return (
     <>
       <StyledDashboardInfo>
-        <img className="headerImage" src={headerImage} alt="YAI Logo"/>
+        {/* <img className="headerImage" src={headerImage} alt="YAI Logo"/> */}
         <img style={{zIndex:2}} src={yaiLogo} alt="YAI Logo"/>
         <div className="yai-dash-total-container">
           <p className="yai-dash-total-title">YAI TOTAL SUPPLY</p>
@@ -390,31 +390,41 @@ let StyledDashboardInfo = styled.section`
   margin-left: auto;
   margin-right: auto;
   flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+  @media only screen and (max-width: 550px){
+    padding-top: 80px;
+  }
   color: white;
-  position: relative;
+  /* background-color: #F40136; */
   .headerImage{
-    position: absolute;
-    left: 0;
-    top: 0;
+    /* position: absolute;
+    left: 50%;
+    top: 0; */
     /* transform: translateX(-50%); */
     z-index: 1;
-    width: 100%;
+    height: 500px;
+
   }
   .yai-dash-total-container{
     display: flex;
     margin-left: auto;
     margin-right: auto;
-    width: 100%auto;
+    width: 100%;
     max-width: 1500px;
     justify-content: center;
     flex-direction: column;
     z-index: 2;
+    background-color: #F40136;
+    font-family: 'Roboto', sans-serif;
+
 
   
     .yai-dash-total-title{
       font-size: 25px;
       font-weight: bold;
       text-align: center;
+      font-family: 'Roboto', sans-serif;
+      margin-top: 25px;
     }
     .yai-dash-total-value{
       font-size: 60px;
@@ -425,12 +435,15 @@ let StyledDashboardInfo = styled.section`
   .yai-dash-info-container{
     display: flex;
     justify-content: center;
-    margin-bottom: 35px;
+    margin-bottom: 0px;
+    background-color: #F40136;
+
     p{
       padding: 10px 30px;
       font-size: 25px;
       font-weight: bold;
       white-space: nowrap;
+      font-family: 'Roboto', sans-serif;
     }
   }
   @media only screen and (max-width: 866px) {
@@ -448,36 +461,79 @@ let StyledDashboardInfo = styled.section`
 
 let StyledDashboardSection = styled.section`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   width: 100%;
   height: fit-content;
-  max-width: 1200px;
+  max-width: 1500px;
   margin-left: auto;
   margin-right: auto;
+  background-color: #F40136;
+  font-family: 'Roboto', sans-serif;
+  padding-bottom: 50px;
+  padding-top: 35px;
   
-  @media only screen and (max-width: 645px) {
+  @media only screen and (max-width: 1190px) {
     flex-direction: column;
     align-items: center;
     .yai-card{
+      :first-child{
+        margin-right: 0px!important;
+      }
+      :last-child{
+        margin-left: 0px!important;
+      }
       margin-bottom: 50px;
     }
 
   }
-  .yai-card{
-    background-color: white;
-    width: 300px;
-    padding: 20px;
+
+  @media only screen and (max-width: 550px){
+    .yai-card{
+      width: 300px!important;
+    }
     .yai-card-title{
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 25px!important;
     }
     .yai-card-subtitle{
-      font-size: 12px;
+      font-size: 18px!important;
+
+    }
+    .yai-card-content{
+      font-size: 18px!important;
+    }
+    .yai-card-button{
+      font-size: 25px!important;
+    }
+  }
+  
+  .yai-card{
+    background-color: white;
+    width: 500px;
+    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+    border-radius: 20px;
+    :first-child{
+      margin-right: 50px;
+    }
+    :last-child{
+      margin-left: 50px;
+    }
+    .yai-card-title{
+      font-size: 32px;
+      font-weight: 800;
+      font-family: 'Roboto', sans-serif;
+      margin-bottom: 40px;
+
+    }
+    .yai-card-subtitle{
+      font-size: 28px;
       font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+
     }
     .yai-card-content{
       display: flex;
-      font-size: 15px;
+      font-size: 28px;
       margin: 0;
       justify-content: space-between;
     }
@@ -486,7 +542,7 @@ let StyledDashboardSection = styled.section`
       padding: 10px;
       margin: 20px auto 20px auto;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 32px;
       text-align: center;
       background: #CF0300;
       border-radius: 15px;

@@ -91,13 +91,12 @@ function App() {
                 
               </Switch>
               :<Switch>
-                <Route path="/"><Redirect to="/dashboard" /></Route>
+                {/* <Route path="/"><Redirect to="/dashboard" /></Route> */}
 
-                {/* <Route path="/"><HomePageNoWeb3/></Route> */}
+                <Route path="/"><HomePageNoWeb3/></Route>
               </Switch>
           }
           
-          <div style={{height: '128px', width: '100%'}}/>
         </StyledBackground>
         </Main>
         <YaiFooter>
@@ -128,11 +127,11 @@ function App() {
 export default App;
 
 let StyledBackground = styled.div`
-  background-color: #F40136;
-  /* background-image: url('/headerimage.png'); */
+  background-color: black;
+  background-image: url('/headerimage.png');
   background-position: top;
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: 1500px 500px;
   
 `
 let YaiFooter = styled.div`
