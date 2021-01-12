@@ -47,10 +47,13 @@ function ConnectButton({ hasWeb3, user, setUser }: connectButtonProps) {
             {/* <div style={{display: 'flex',justifyContent: 'space-between',alignItems: 'center'}}>
               <img src={TokenIcon} style={{width: '20px', marginRight: '10px'}} alt="TokenIcon"/>
               <div>
-                {user.substring(0,5)+"..."+user.substring(user.length-5,user.length)}
               </div>
             </div> */}
-            <IdentityBadge entity={user} />
+            {/* <IdentityBadge entity={user} /> */}
+            <div className="connect-btn-address">
+            {user.substring(0,5)+"..."+user.substring(user.length-5,user.length)}
+            </div>
+            {/* {user} */}
           </div>
           <TotalBalance user={user} />
           

@@ -108,6 +108,9 @@ let StyledWrapper = styled.div`
     .nav-logo{
       width: 200px;
     }
+    .connect-btn-address{
+      margin-right: 20px;
+    }
     .nav-links-container{
       width: fit-content;
       background: white!important;

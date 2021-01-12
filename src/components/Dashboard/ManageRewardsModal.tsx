@@ -274,6 +274,40 @@ let Modal = styled.div`
         border-radius: 10px;
                 
     }
-
+    
+    @media only screen and (max-width: 550px){
+        width: 300px!important;
+        left: 50%;
+        top: 50%;
+        transform: translate(-53%,-50%);
+        margin: 0;
+        .yai-modal-choose{
+            p{
+                font-size: 18px;
+                margin-top: auto;
+                margin-bottom: auto;
+                :first-child{
+                    margin-right: 15px;
+                }
+                :last-child{
+                    margin-left: 15px;
+                }
+            }
+        }
+        .yai-modal-header{
+            p{
+                font-size: 25px;
+                font-weight: bold;
+            }
+        }
+        .yai-modal-tab-item{
+            p{
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                margin: auto; 
+            }
+        }
+    }
 
 `

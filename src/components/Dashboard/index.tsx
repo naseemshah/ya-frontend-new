@@ -480,7 +480,15 @@ let StyledPleaseConnectModal = styled.div`
     z-index: 50;
     border-radius: 20px;
     box-shadow: 0 0 50px rgba(0,0,0,0.3);
+    @media only screen and (max-width: 550px){
+      width: 300px!important;
+      height: 50vh!important;
+      h1{
+        font-size: 18px!important;
+        font-weight: bold;
+      }
 
+    }
 
     h1{
       font-size: 30px;
