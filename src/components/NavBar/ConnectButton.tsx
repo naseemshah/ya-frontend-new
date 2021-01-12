@@ -49,10 +49,10 @@ function ConnectButton({ hasWeb3, user, setUser }: connectButtonProps) {
               <div>
               </div>
             </div> */}
-            {/* <IdentityBadge entity={user} /> */}
-            <div className="connect-btn-address">
+            <IdentityBadge entity={user} />
+            {/* <div className="connect-btn-address">
             {user.substring(0,5)+"..."+user.substring(user.length-5,user.length)}
-            </div>
+            </div> */}
             {/* {user} */}
           </div>
           <TotalBalance user={user} />
