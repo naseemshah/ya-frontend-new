@@ -34,6 +34,7 @@ import BalanceBlock from './BalanceBlock'
 import ManageDAOModel from './ManageDAOModel'
 import ManageLPModal from './ManageLPModal'
 import ManageCouponsModal from './ManageCouponsModal'
+import ManageRewardsModal from './ManageRewardsModal'
 
 
 function epochformatted() {
@@ -73,6 +74,8 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const [isManageDAOModal,setIsManageDAOModal] = useState(false);
   const [isManageLPModal,setIsManageLPModal] = useState(false);
   const [isManageCoupons,setIsManageCoupons] = useState(false);
+  let [isManageRewardsModal,setIsManageRewardsModal] = useState(false)
+
   
   const [poolAddress, setPoolAddress] = useState("");
   const [poolTotalBonded, setPoolTotalBonded] = useState(new BigNumber(0));
@@ -281,11 +284,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             </div>
             <div className="yai-card-content">
               <p>Staged</p>
-              <p><BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/></p>
+              <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
               <p>Bonded</p>
-              <p><BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/></p>
+              <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
           <div
@@ -302,8 +305,8 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             </div>
             <div className="yai-card-content">
               <p>Redeemable</p>
-              <p><BalanceBlock  balance={redeemable} suffix={" YAI"}/>
-              </p>
+              <BalanceBlock  balance={redeemable} suffix={" YAI"}/>
+              
             </div>    
           </div>
           <div
@@ -337,11 +340,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             </div>
             <div className="yai-card-content">
               <p>Staged</p>
-              <p><BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/></p>
+              <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
               <p>Bonded</p>
-              <p><BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/></p>
+              <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
           <div
@@ -354,16 +357,17 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             <h5 className="yai-card-subtitle">Coupons</h5>
             <div className="yai-card-content">
               <p>Earned</p>
-              <p><BalanceBlock  balance={isRewardedNegative ? new BigNumber(0) : userRewardedBalance} suffix={" YAI"}/></p>
+              <BalanceBlock  balance={isRewardedNegative ? new BigNumber(0) : userRewardedBalance} suffix={" YAI"}/>
             </div>
             <div className="yai-card-content">
               <p>Claimable</p>
-              <p><BalanceBlock  balance={userClaimableBalance} suffix={" YAI"}/>
-              </p>
+              <BalanceBlock  balance={userClaimableBalance} suffix={" YAI"}/>
+              
             </div>    
           </div>
           <div
             className="yai-card-button"
+            onClick={()=>{setIsManageRewardsModal(true)}}
             
           >
             Manage Rewards
@@ -403,10 +407,34 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         userBondedBalance ={userBondedBalance}
         setModal = {setIsManageCoupons}
         />}
+
+      {isManageCoupons && user && <ManageCouponsModal 
+        user={user}
+        balance={userESDBalance}
+        allowance={userESDAllowance}
+        stagedBalance={userStagedBalance}
+        status={userStatus}
+        userStagedBalance={userStagedBalance}
+        userBondedBalance ={userBondedBalance}
+        setModal = {setIsManageCoupons}
+        />}
+
+         {isManageRewardsModal && user && <ManageRewardsModal 
+            user={user}
+            balance={userESDBalance}
+            allowance={userESDAllowance}
+            stagedBalance={userStagedBalance}
+            status={userStatus}
+            userStagedBalance={userStagedBalance}
+            userBondedBalance ={userBondedBalance}
+            setModal = {setIsManageRewardsModal}
+        />}
+
       
       {isManageDAOModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser}  setModal={setIsManageDAOModal}/>}
       {isManageLPModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser} setModal={setIsManageLPModal}/>}
       {isManageCoupons && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser}  setModal={setIsManageCoupons}/>}
+      {isManageRewardsModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser}  setModal={setIsManageRewardsModal}/>}
       
       
       
@@ -452,6 +480,7 @@ let StyledPleaseConnectModal = styled.div`
     z-index: 50;
     border-radius: 20px;
     box-shadow: 0 0 50px rgba(0,0,0,0.3);
+
 
     h1{
       font-size: 30px;
@@ -543,6 +572,10 @@ let StyledDashboardInfo = styled.section`
         padding: 8px 20px;
         font-size: 18px;
       }
+  }
+
+  @media only screen and (max-width: 690px) {
+    padding-top: 135px;
   }
 
   }

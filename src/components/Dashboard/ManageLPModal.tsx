@@ -140,11 +140,11 @@ const ManageLPModal = ({
                             </div>
                             <div className="yai-card-content">
                             <p>Staged</p>
-                            <p><BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
                             </div> 
                             <div className="yai-card-content">
                             <p>Bonded</p>
-                            <p><BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
                             </div>
                         </div>
                     </div>
@@ -218,11 +218,11 @@ const ManageLPModal = ({
                             </div>
                             <div className="yai-card-content">
                             <p>Staged</p>
-                            <p><BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
                             </div> 
                             <div className="yai-card-content">
                             <p>Bonded</p>
-                            <p><BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
                             </div>
                         </div>
                     </div>

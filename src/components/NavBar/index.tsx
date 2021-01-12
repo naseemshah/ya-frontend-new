@@ -35,21 +35,10 @@ function NavBar({ hasWeb3, user, setUser }: NavbarProps) {
       > 
         <StyledWrapper>
         <div style={{ maxWidth: '1100px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <div className="nav-container" style={{ display: 'flex', paddingTop: '24px', justifyContent: "space-between" }}>
-            {/* <div style={{ width: '20%', textAlign: 'left'}}>
-              <NavLink to="/" component={LinkBase} style={{ marginRight: '16px', height: '40px' }}>
-                <img src={logoUrl} height="40px" alt="Empty Set Dollar" />
-                <h1 
-                  style={{
-                    fontWeight: 'bold',
-                    fontSize: '25px',
-                    marginLeft: '10px'
-                  }}
-                >YAI FINANCE</h1>
-              </NavLink>
-            </div> */}
-            <div></div>
-            <div  className="nav-links-container" style={{ display:'flex', height: '100%', maxWidth: '60%', textAlign: 'center', borderRadius: '50px', overflow: 'hidden', backgroundColor: 'white', boxShadow: '0px 0px 50px rgba(0, 0, 0, 0.186)'}}>
+          <div className="nav-container">
+            
+            <div className="nav-logo"></div>
+            <div  className="nav-links-container">
               {/* <LinkButton title="DAO" to="/dao/" /> */}
               <LinkButton title="Dashboard" to="/dashboard/" />
               {/* <LinkButton title="Liquidity" to="/pool/" /> */}
@@ -60,7 +49,7 @@ function NavBar({ hasWeb3, user, setUser }: NavbarProps) {
               {/* <Link to="/dashboard"></Link> */}
 
             </div>
-            <div className="yai-connect-button" style={{textAlign: 'right', marginRight: '10px' }}>
+            <div className="yai-connect-button">
               <ConnectButton hasWeb3={hasWeb3} user={user} setUser={setUser} />
             </div>
           </div>
@@ -81,7 +70,7 @@ function LinkButton({ title, to }: linkButtonProps) {
   return (
     <NavLink
       to={to}
-      external={false}
+      external="false"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -104,16 +93,32 @@ export default NavBar;
 
 let StyledWrapper = styled.div`
   .nav-container{
-    @media only screen and (max-width: 550px) {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+    padding-right: 20px;
+    @media only screen and (max-width: 690px) {
       flex-direction: column;
       align-items: center;
-      padding-top: 0!important;
+      /* padding-top: 0!important; */
       .yai-connect-button{
         margin-top: 20px;
       }
-      .nav-links-container{
-        transform: translateX(150px)!important;
-      }
+    }
+    .nav-logo{
+      width: 200px;
+    }
+    .nav-links-container{
+      width: fit-content;
+      background: white!important;
+      border-radius: 50px;
+      overflow: hidden;
+      height: 100%;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.248);
+      /* position: absolute!important;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%)!important; */
     }
   }
 `

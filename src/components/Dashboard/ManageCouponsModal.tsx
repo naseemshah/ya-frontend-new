@@ -136,11 +136,11 @@ const ManageCouponsModal = ({
                             </div>
                             <div className="yai-card-content">
                             <p>Debt</p>
-                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={0} suffix={" YAI"}/>
                             </div> 
                             <div className="yai-card-content">
                             <p>Purchased</p>
-                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={0} suffix={" YAI"}/>
                             </div>
                         </div>
                     </div>
@@ -209,11 +209,11 @@ const ManageCouponsModal = ({
                             </div>
                             <div className="yai-card-content">
                             <p>Debt</p>
-                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={0} suffix={" YAI"}/>
                             </div> 
                             <div className="yai-card-content">
                             <p>Purchased</p>
-                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
+                            <BalanceBlock  balance={0} suffix={" YAI"}/>
                             </div>
                         </div>
                     </div>
