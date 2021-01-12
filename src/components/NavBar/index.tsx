@@ -36,19 +36,20 @@ function NavBar({ hasWeb3, user, setUser }: NavbarProps) {
         <StyledWrapper>
         <div style={{ maxWidth: '1100px', marginLeft: 'auto', marginRight: 'auto' }}>
           <div className="nav-container" style={{ display: 'flex', paddingTop: '24px', justifyContent: "space-between" }}>
-            <div style={{ width: '20%', textAlign: 'left'}}>
+            {/* <div style={{ width: '20%', textAlign: 'left'}}>
               <NavLink to="/" component={LinkBase} style={{ marginRight: '16px', height: '40px' }}>
-                {/* <img src={logoUrl} height="40px" alt="Empty Set Dollar" /> */}
-                {/* <h1 
+                <img src={logoUrl} height="40px" alt="Empty Set Dollar" />
+                <h1 
                   style={{
                     fontWeight: 'bold',
                     fontSize: '25px',
                     marginLeft: '10px'
                   }}
-                >YAI FINANCE</h1> */}
+                >YAI FINANCE</h1>
               </NavLink>
-            </div>
-            <div style={{ display:'flex', height: '100%', maxWidth: '60%', textAlign: 'center', borderRadius: '50px', overflow: 'hidden', backgroundColor: 'white', boxShadow: '0px 0px 50px rgba(0, 0, 0, 0.186)'}}>
+            </div> */}
+            <div></div>
+            <div  className="nav-links-container" style={{ display:'flex', height: '100%', maxWidth: '60%', textAlign: 'center', borderRadius: '50px', overflow: 'hidden', backgroundColor: 'white', boxShadow: '0px 0px 50px rgba(0, 0, 0, 0.186)'}}>
               {/* <LinkButton title="DAO" to="/dao/" /> */}
               <LinkButton title="Dashboard" to="/dashboard/" />
               {/* <LinkButton title="Liquidity" to="/pool/" /> */}
@@ -109,6 +110,9 @@ let StyledWrapper = styled.div`
       padding-top: 0!important;
       .yai-connect-button{
         margin-top: 20px;
+      }
+      .nav-links-container{
+        transform: translateX(150px)!important;
       }
     }
   }

@@ -73,7 +73,7 @@ function App() {
           {
             hasWeb3 ?
               <Switch>
-                <Route path="/dashboard/"><Dashboard user={user}/></Route>
+                <Route path="/dashboard/"><Dashboard hasWeb3={hasWeb3} user={user} setUser={setUser} /></Route>
                 <Route path="/dao/:override"><Wallet user={user}/></Route>
                 <Route path="/dao/"><Wallet user={user}/></Route>
                 <Route path="/epoch/"><EpochDetail user={user}/></Route>

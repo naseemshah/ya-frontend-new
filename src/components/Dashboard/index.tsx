@@ -4,6 +4,8 @@ import styled from 'styled-components'
 import BigNumber from 'bignumber.js';
 import yaiLogo from '../common/yai-logo.svg'
 import headerImage from './headerimage.png'
+import ConnectWalletButton from '../NavBar/ConnectButton';
+
 import {
   getBalanceBonded,
   getBalanceOfStaged, getFluidUntil, getLockedUntil,
@@ -30,6 +32,7 @@ import {POOL_EXIT_LOCKUP_EPOCHS} from "../../constants/values";
 
 import BalanceBlock from './BalanceBlock'
 import ManageDAOModel from './ManageDAOModel'
+import ManageLPModal from './ManageLPModal'
 
 
 function epochformatted() {
@@ -49,7 +52,7 @@ function epochformatted() {
   return `${epoch}-0${epochHour}:${epochMinute > 9 ? epochMinute : "0" + epochMinute.toString()}:${epochRemainder > 9 ? epochRemainder : "0" + epochRemainder.toString()}`;
 }
 
-function Dashboard({ user }: {user: string}) {
+function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string, setUser: Function}) {
   const { override } = useParams();
   if (override) {
     user = override;
@@ -66,6 +69,7 @@ function Dashboard({ user }: {user: string}) {
   const [lockup, setLockup] = useState(0);
   const [redeemable, setRedeemable] = useState(new BigNumber(0));
   const [isManageDAOModal,setIsManageDAOModal] = useState(false);
+  const [isManageLPModal,setIsManageLPModal] = useState(false);
   const [poolAddress, setPoolAddress] = useState("");
   const [poolTotalBonded, setPoolTotalBonded] = useState(new BigNumber(0));
   const [pairBalanceESD, setPairBalanceESD] = useState(new BigNumber(0));
@@ -237,6 +241,7 @@ function Dashboard({ user }: {user: string}) {
   return (
     <>
       <StyledDashboardInfo>
+
         {/* <img className="headerImage" src={headerImage} alt="YAI Logo"/> */}
         <img style={{zIndex:2}} src={yaiLogo} alt="YAI Logo"/>
         <div className="yai-dash-total-container">
@@ -247,6 +252,7 @@ function Dashboard({ user }: {user: string}) {
           <p>1 YAI =  --.--- DAI</p>
           <p>SPOT PRICE ¥---</p>
           <p>NEXT EPOCH {epochTime}</p>
+
         </div>
 
       </StyledDashboardInfo>
@@ -336,7 +342,7 @@ function Dashboard({ user }: {user: string}) {
           </div>
           <div
             className="yai-card-button"
-            onClick={()=>{setIsManageDAOModal(true)}}
+            onClick={()=>{setIsManageLPModal(true)}}
           >
             Manage LP
           </div>
@@ -356,15 +362,14 @@ function Dashboard({ user }: {user: string}) {
             className="yai-card-button"
             onClick={()=>{}}
           >
-            Manage Coupons
+            Manage Rewards
           </div>
-        
         </div>
       
       
       
       </StyledDashboardSection>
-      {isManageDAOModal && <ManageDAOModel 
+      {isManageDAOModal && user && <ManageDAOModel 
         user={user}
         balance={userESDBalance}
         allowance={userESDAllowance}
@@ -374,12 +379,82 @@ function Dashboard({ user }: {user: string}) {
         userBondedBalance ={userBondedBalance}
         setModal = {setIsManageDAOModal}
         />}
+        {isManageLPModal && user && <ManageLPModal 
+        user={user}
+        balance={userESDBalance}
+        allowance={userESDAllowance}
+        stagedBalance={userStagedBalance}
+        status={userStatus}
+        userStagedBalance={userStagedBalance}
+        userBondedBalance ={userBondedBalance}
+        setModal = {setIsManageLPModal}
+        />}
+
+      {isManageDAOModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser}  setModal={setIsManageDAOModal}/>}
+      {isManageLPModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser} setModal={setIsManageLPModal}/>}
+      
+      
+      
+
     </>
   );
 }
 
 export default Dashboard;
 
+let PleaseConnectModal = (props)=>{
+    return(
+      <StyledPleaseConnectModal>
+        <div 
+          className="close-icon"
+          onClick={()=>{props.setModal(false)}}
+          style={{cursor: 'pointer'}}
+        >
+          <i className=" fa fa-times fa-2x"></i>
+        </div>
+        <div>
+          <i className="fa fa-warning fa-2x"></i>
+          <h1>Please Connect your wallet</h1>
+        </div>
+        <div className='connect-wallet-button'>
+          <ConnectWalletButton hasWeb3={props.hasWeb3} user={props.user} setUser={props.setUser} />
+        </div>
+
+      </StyledPleaseConnectModal>
+    )
+
+}
+
+let StyledPleaseConnectModal = styled.div`
+    width: 500px;
+    height: 500px;
+    background-color: white;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    padding: 30px;
+    z-index: 50;
+    border-radius: 20px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.3);
+
+    h1{
+      font-size: 30px;
+      font-weight: bold;
+
+    }
+
+    .close-icon{
+      text-align: right;
+      margin-left: auto;
+    }
+    .connect-wallet-button{
+      margin-top: 50px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+`
 
 let StyledDashboardInfo = styled.section`
   display: flex;

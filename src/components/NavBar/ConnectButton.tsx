@@ -8,6 +8,9 @@ import {
 import { connect } from '../../utils/web3';
 import TotalBalance from "./TotalBalance";
 import ConnectModal from './ConnectModal';
+import { TokenClass } from 'typescript';
+
+import TokenIcon from './tokenIcon.jpeg'
 
 type connectButtonProps = {
   hasWeb3: boolean,
@@ -36,17 +39,20 @@ function ConnectButton({ hasWeb3, user, setUser }: connectButtonProps) {
     <div style={{display: 'flex'}}>
       <div style={{flex: '1'}}/>
       <div>
-        <Box padding={5} style={{width: '192px', borderRadius: 10}}>
+        <Box padding={5} style={{width: '170px', borderRadius: 10}}>
           <div style={{display: 'flex',justifyContent: 'space-between',alignItems: 'center'}}>
             <LinkBase onClick={disconnectWeb3} style={{marginRight: '8px', height: '24px'}}>
                 <IconPower />
             </LinkBase>
+            {/* <div style={{display: 'flex',justifyContent: 'space-between',alignItems: 'center'}}>
+              <img src={TokenIcon} style={{width: '20px', marginRight: '10px'}} alt="TokenIcon"/>
+              <div>
+                {user.substring(0,5)+"..."+user.substring(user.length-5,user.length)}
+              </div>
+            </div> */}
             <IdentityBadge entity={user} />
           </div>
           <TotalBalance user={user} />
-          {/* <div>
-            {user.substring(0,5)+"..."+user.substring(user.length-5,user.length)}
-          </div> */}
           
         </Box>
       </div>
@@ -55,7 +61,7 @@ function ConnectButton({ hasWeb3, user, setUser }: connectButtonProps) {
     <>
       <ConnectModal visible={isModalOpen} onClose={toggleModal} onConnect={connectWeb3}/>
       {/* <Button icon={<IconConnect />} label="Connect" onClick={toggleModal} disabled={!hasWeb3}/> */}
-      <Box padding={5} style={{width: 'fit-content', padding: '5px', borderRadius: 10}}>
+      <Box padding={5} style={{width: '150px', padding: '5px', borderRadius: 10}}>
           <div 
             onClick={toggleModal}
             style={{display: 'flex',justifyContent: 'center',alignItems: 'center', cursor: 'pointer'}}>

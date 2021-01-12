@@ -61,7 +61,7 @@ const ManageDAOModal = ({
     return(
         <Modal className="yai-modal">
             <div className="yai-modal-header">
-                <p>Manage DAO</p>
+                <p>Manage LP</p>
                 <div style={{cursor: 'pointer'}} onClick={()=>{setModal(false)}} className="fa fa-times"></div>
             </div>
             <div>
