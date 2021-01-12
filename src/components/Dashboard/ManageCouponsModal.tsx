@@ -47,7 +47,7 @@ type Props = {
     setModal: Function,
   };
 
-const ManageLPModal = ({
+const ManageCouponsModal = ({
     user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal
   }: Props) => {
   const [depositAmount, setDepositAmount] = useState(0);
@@ -61,7 +61,7 @@ const ManageLPModal = ({
     return(
         <Modal className="yai-modal">
             <div className="yai-modal-header">
-                <p>Manage LP</p>
+                <p>Manage Coupons</p>
                 <div style={{cursor: 'pointer'}} onClick={()=>{setModal(false)}} className="fa fa-times"></div>
             </div>
             <div>
@@ -69,20 +69,16 @@ const ManageLPModal = ({
             </div>
             <Tabs className="yai-modal-tabs">
                 <TabList className="yai-modal-tablist">
-                    <Tab className="yai-modal-tab-item"><p>STAGE</p></Tab>
-                    <Tab className="yai-modal-tab-item"><p>BOND</p></Tab>
+                    <Tab className="yai-modal-tab-item"><p>PURCHASE</p></Tab>
+                    <Tab className="yai-modal-tab-item"><p>REDEEM</p></Tab>
                 </TabList>
                 <TabPanel className="yai-modal-tab-panel">
                     <div>
                         <div>
                             <div className="yai-card-content">
-                                <p>Epoch Yield</p>
+                                <p>Coupon Premium</p>
                                 <p>--%</p>
                             </div>
-                            <div className="yai-card-content">
-                                <p>Cycle APY</p>
-                                <p>--%</p>
-                            </div>    
                         </div>
                         {
                             isApproved ? <div>
@@ -135,16 +131,16 @@ const ManageLPModal = ({
                         
                         <div>
                             <div className="yai-card-content">
-                            <p>Wallet (Trade YAI)</p>
-                            <p>--</p>
+                            <p>Balance</p>
+                            <p>-.-- YAI</p>
                             </div>
                             <div className="yai-card-content">
-                            <p>Staged</p>
-                            <p><BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/></p>
+                            <p>Debt</p>
+                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
                             </div> 
                             <div className="yai-card-content">
-                            <p>Bonded</p>
-                            <p><BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/></p>
+                            <p>Purchased</p>
+                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
                             </div>
                         </div>
                     </div>
@@ -154,13 +150,8 @@ const ManageLPModal = ({
                     <div>
                         <div>
                             <div className="yai-card-content">
-                                <p>Epoch Yield</p>
-                                <p>--%</p>
-                            </div>
-                            <div className="yai-card-content">
-                                <p>Cycle APY</p>
-                                <p>--%</p>
-                            </div>    
+                                <p>No Coupons to Display</p>
+                            </div>                                
                         </div>
                         {
                             isApproved ? <div>
@@ -213,16 +204,16 @@ const ManageLPModal = ({
                         
                         <div>
                             <div className="yai-card-content">
-                            <p>Wallet (Trade YAI)</p>
-                            <p>--</p>
+                            <p>Balance</p>
+                            <p>-.-- YAI</p>
                             </div>
                             <div className="yai-card-content">
-                            <p>Staged</p>
-                            <p><BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/></p>
+                            <p>Debt</p>
+                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
                             </div> 
                             <div className="yai-card-content">
-                            <p>Bonded</p>
-                            <p><BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/></p>
+                            <p>Purchased</p>
+                            <p><BalanceBlock  balance={0} suffix={" YAI"}/></p>
                             </div>
                         </div>
                     </div>
@@ -235,7 +226,7 @@ const ManageLPModal = ({
 };
 
 
-export default ManageLPModal;
+export default ManageCouponsModal;
 
 let Modal = styled.div`
     width: 450px;

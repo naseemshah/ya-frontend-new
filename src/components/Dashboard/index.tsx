@@ -33,6 +33,7 @@ import {POOL_EXIT_LOCKUP_EPOCHS} from "../../constants/values";
 import BalanceBlock from './BalanceBlock'
 import ManageDAOModel from './ManageDAOModel'
 import ManageLPModal from './ManageLPModal'
+import ManageCouponsModal from './ManageCouponsModal'
 
 
 function epochformatted() {
@@ -68,8 +69,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const [userStatusUnlocked, setUserStatusUnlocked] = useState(0);
   const [lockup, setLockup] = useState(0);
   const [redeemable, setRedeemable] = useState(new BigNumber(0));
+
   const [isManageDAOModal,setIsManageDAOModal] = useState(false);
   const [isManageLPModal,setIsManageLPModal] = useState(false);
+  const [isManageCoupons,setIsManageCoupons] = useState(false);
+  
   const [poolAddress, setPoolAddress] = useState("");
   const [poolTotalBonded, setPoolTotalBonded] = useState(new BigNumber(0));
   const [pairBalanceESD, setPairBalanceESD] = useState(new BigNumber(0));
@@ -304,7 +308,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
           </div>
           <div
             className="yai-card-button"
-            onClick={()=>{}}
+            onClick={()=>{setIsManageCoupons(true)}}
           >
             Manage Coupons
           </div>
@@ -360,7 +364,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
           </div>
           <div
             className="yai-card-button"
-            onClick={()=>{}}
+            
           >
             Manage Rewards
           </div>
@@ -389,9 +393,20 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         userBondedBalance ={userBondedBalance}
         setModal = {setIsManageLPModal}
         />}
-
+        {isManageCoupons && user && <ManageCouponsModal 
+        user={user}
+        balance={userESDBalance}
+        allowance={userESDAllowance}
+        stagedBalance={userStagedBalance}
+        status={userStatus}
+        userStagedBalance={userStagedBalance}
+        userBondedBalance ={userBondedBalance}
+        setModal = {setIsManageCoupons}
+        />}
+      
       {isManageDAOModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser}  setModal={setIsManageDAOModal}/>}
       {isManageLPModal && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser} setModal={setIsManageLPModal}/>}
+      {isManageCoupons && !user && <PleaseConnectModal hasWeb3={hasWeb3} user={user} setUser={setUser}  setModal={setIsManageCoupons}/>}
       
       
       
