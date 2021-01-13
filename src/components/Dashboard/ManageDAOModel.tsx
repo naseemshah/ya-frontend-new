@@ -8,7 +8,7 @@ import { bond, unbondUnderlying } from '../../utils/web3';
 import BalanceBlock from './BalanceBlock'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import ToggleButton from 'react-toggle-button'
-
+import {MAX_UINT256} from "../../constants/values";
 
 import {
     Box, Button, IconCirclePlus, IconCircleMinus, IconLock
@@ -17,6 +17,10 @@ import {
 
 
 let handleApproveButton = (setIsApproved)=>{
+
+     
+       
+      
     setIsApproved(true)
 }
 
@@ -45,10 +49,15 @@ type Props = {
     userStagedBalance: BigNumber,
     userBondedBalance: BigNumber,
     setModal: Function,
+    approve:Function,
+    deposit:Function,
+    withdraw:Function,
+    bond:Function,
+    unbond:Function,
   };
 
 const ManageDAOModal = ({
-    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal
+    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal,approve,deposit,withdraw,bond,unbond
   }: Props) => {
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
@@ -85,7 +94,7 @@ const ManageDAOModal = ({
                             </div>    
                         </div>
                         {
-                            isApproved ? <div>
+                            allowance.comparedTo(MAX_UINT256) === 0 ?   <div>
                                 <input 
                                     className="yai-modal-input"
                                     onChange={(e)=>{
@@ -118,8 +127,8 @@ const ManageDAOModal = ({
                                 <div
                                     className="yai-modal-button"
                                     onClick={()=>{
-                                       if(isStageModeDeposite) handleDepositButton()
-                                       else handleWithdrawButton()
+                                       if(isStageModeDeposite) deposit(depositAmount)
+                                       else withdraw(withdrawAmount)
                                     
                                     }}
                                     >                
@@ -127,7 +136,7 @@ const ManageDAOModal = ({
                                 </div>
                             </div> :<div
                             className="yai-modal-button"
-                            onClick={()=>{handleApproveButton(setIsApproved)}}
+                            onClick={()=>{approve()}}
                             >                
                             Approve
                         </div>
@@ -163,7 +172,7 @@ const ManageDAOModal = ({
                             </div>    
                         </div>
                         {
-                            isApproved ? <div>
+                             allowance.comparedTo(MAX_UINT256) === 0 ? <div>
                                 <input 
                                     className="yai-modal-input"
                                     onChange={(e)=>{
@@ -196,8 +205,8 @@ const ManageDAOModal = ({
                                 <div
                                     className="yai-modal-button"
                                     onClick={()=>{
-                                       if(isBondMode) handleBondButton()
-                                       else handleUnBondButton()
+                                       if(isBondMode) bond(bondAmount)
+                                       else unbond(unBondAmount)
                                     
                                     }}
                                     >                

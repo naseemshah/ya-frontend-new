@@ -10,7 +10,7 @@ import {
   getBalanceBonded,
   getBalanceOfStaged, getFluidUntil, getLockedUntil,
   getStatusOf, getTokenAllowance,
-  getTokenBalance, getTokenTotalSupply, getTotalRedeemable
+  getTokenBalance, getTokenTotalSupply, getTotalRedeemable,getEpochTime
 } from '../../utils/infura';
 import {
   getPoolBalanceOfBonded, getPoolBalanceOfClaimable,
@@ -22,12 +22,14 @@ import {
 import {ESD, ESDS, UNI, USDC} from "../../constants/tokens";
 import {DAO_EXIT_LOCKUP_EPOCHS} from "../../constants/values";
 import { toTokenUnitsBN } from '../../utils/number';
-
+ 
+import {isPos, toBaseUnitBN} from '../../utils/number';
 import AccountPageHeader from "./Header";
 import WithdrawDeposit from "./WithdrawDeposit";
+import {approve, deposit, withdraw,bond,unbondUnderlying} from '../../utils/web3';
 import BondUnbond from "./BondUnbond";
 import {getLegacyPoolAddress,getPoolAddress} from "../../utils/pool";
-import {DollarPool4} from "../../constants/contracts";
+//import {DollarPool4} from "../../constants/contracts";
 import {POOL_EXIT_LOCKUP_EPOCHS} from "../../constants/values";
 
 import BalanceBlock from './BalanceBlock'
@@ -37,21 +39,26 @@ import ManageCouponsModal from './ManageCouponsModal'
 import ManageRewardsModal from './ManageRewardsModal'
 
 
-function epochformatted() {
-  const epochStart = 1599148800;
-  const epochPeriod = 8 * 60 * 60;
+  function epochformatted(epochTime) {
+   
+
+  const epochPeriod = 30 * 60 ;
+  const epochStart = 1608422400;  
   const hour = 60 * 60;
   const minute = 60;
-  const unixTimeSec = Math.floor(Date.now() / 1000);
+  let epochRemainder =  parseInt(epochTime, 10) *epochPeriod
 
-  let epochRemainder = unixTimeSec - epochStart
-  const epoch = Math.floor(epochRemainder / epochPeriod);
-  epochRemainder -= epoch * epochPeriod;
+  epochRemainder=epochRemainder+epochStart
+  epochRemainder=Math.floor(Date.now() / 1000)-epochRemainder
+  epochRemainder=epochPeriod-epochRemainder
   const epochHour = Math.floor(epochRemainder / hour);
   epochRemainder -= epochHour * hour;
   const epochMinute = Math.floor(epochRemainder / minute);
   epochRemainder -= epochMinute * minute;
-  return `${epoch}-0${epochHour}:${epochMinute > 9 ? epochMinute : "0" + epochMinute.toString()}:${epochRemainder > 9 ? epochRemainder : "0" + epochRemainder.toString()}`;
+ 
+
+ 
+  return `${epochHour}:${epochMinute > 9 ? epochMinute : "0" + epochMinute.toString()}:${epochRemainder > 9 ? epochRemainder : "0" + epochRemainder.toString()}`;
 }
 
 function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string, setUser: Function}) {
@@ -59,10 +66,39 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   if (override) {
     user = override;
   }
-  const [epochTime, setEpochTime] = useState("0-00:00:00");
+  const ApproveDAO=()=>{
+    approve(ESD.addr, ESDS.addr)
+  } 
+  const DepostYAIToDAO=(depositAmount)=>{
+    deposit(
+      ESDS.addr,
+      toBaseUnitBN(depositAmount , ESD.decimals))
+     
+  }
+  const WithdrawYAIFromDAO=(withdrawAmount)=>{
+    withdraw(
+      ESDS.addr,
+      toBaseUnitBN(withdrawAmount, ESD.decimals),
+    )
+     
+  }
+  const BondYAITODAO=(bondAmount)=>{
+    bond(
+      ESDS.addr,
+      toBaseUnitBN(bondAmount, ESD.decimals),
+    );
+  }
+  const UnbondYAIFromDAO=(unbondAmount)=>{
+    unbondUnderlying(
+      ESDS.addr,
+      toBaseUnitBN(unbondAmount, ESD.decimals),
+    )
+  }
+  const [epochTime, setEpochTime] = useState("00:00:00");
   const [userESDBalance, setUserESDBalance] = useState(new BigNumber(0));
   const [userESDAllowance, setUserESDAllowance] = useState(new BigNumber(0));
   const [userESDSBalance, setUserESDSBalance] = useState(new BigNumber(0));
+  const [totalESDSupply, setTotalESDSupply] = useState(new BigNumber(0));
   const [totalESDSSupply, setTotalESDSSupply] = useState(new BigNumber(0));
   const [userStagedBalance, setUserStagedBalance] = useState(new BigNumber(0));
   const [userBondedBalance, setUserBondedBalance] = useState(new BigNumber(0));
@@ -87,18 +123,22 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const [userUSDCAllowance, setUserUSDCAllowance] = useState(new BigNumber(0));
   const [userRewardedBalance, setUserRewardedBalance] = useState(new BigNumber(0));
   const [userClaimableBalance, setUserClaimableBalance] = useState(new BigNumber(0));
-  const [legacyUserStagedBalance, setLegacyUserStagedBalance] = useState(new BigNumber(0));
-  const [legacyUserBondedBalance, setLegacyUserBondedBalance] = useState(new BigNumber(0));
-  const [legacyUserRewardedBalance, setLegacyUserRewardedBalance] = useState(new BigNumber(0));
-  const [legacyUserClaimableBalance, setLegacyUserClaimableBalance] = useState(new BigNumber(0));
-  const [legacyUserStatus, setLegacyUserStatus] = useState(0);
-
+  const [poolUserStagedBalance, setPoolUserStagedBalance] = useState(new BigNumber(0));
+  const [poolUserBondedBalance, setPoolUserBondedBalance] = useState(new BigNumber(0));
+  const [poolUserRewardedBalance, setPoolUserRewardedBalance] = useState(new BigNumber(0));
+  const [poolUserClaimableBalance, setPoolUserClaimableBalance] = useState(new BigNumber(0));
+  const [poolUserStatus, setPoolUserStatus] = useState(0);
+  const [poolFluidUntil,setPoolFluidUntil]=useState(0);
+ 
   //Update User balances
   useEffect(() => {
+    
+
     if (user === '') {
       setUserESDBalance(new BigNumber(0));
       setUserESDAllowance(new BigNumber(0));
       setUserESDSBalance(new BigNumber(0));
+      setTotalESDSupply(new BigNumber(0));
       setTotalESDSSupply(new BigNumber(0));
       setUserStagedBalance(new BigNumber(0));
       setUserBondedBalance(new BigNumber(0));
@@ -119,32 +159,55 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       setUserClaimableBalance(new BigNumber(0));
       setUserStatus(0);
       setUserStatusUnlocked(0);
-      setLegacyUserStagedBalance(new BigNumber(0));
-      setLegacyUserBondedBalance(new BigNumber(0));
-      setLegacyUserRewardedBalance(new BigNumber(0));
-      setLegacyUserClaimableBalance(new BigNumber(0));
-      setLegacyUserStatus(0);
+      setPoolUserStagedBalance(new BigNumber(0));
+      setPoolUserBondedBalance(new BigNumber(0));
+      setPoolUserRewardedBalance(new BigNumber(0));
+      setPoolUserClaimableBalance(new BigNumber(0));
+      setPoolUserStatus(0);
       return;
     }
     let isCancelled = false;
 
     async function updateUserInfo() {
+       
+       
       const poolAddressStr = await getPoolAddress();
-      const legacyPoolAddress = getLegacyPoolAddress(poolAddressStr);
-      const [
-        esdBalance, esdAllowance, esdsBalance, esdsSupply, stagedBalance, bondedBalance, status, poolAddress,
-        fluidUntilStr, lockedUntilStr,redeemableStr,poolTotalBondedStr, pairBalanceESDStr, pairBalanceUSDCStr, balance, usdcBalance,
-        allowance, usdcAllowance, rewardedBalance, claimableBalance,
-        legacyStagedBalance, legacyBondedBalance, legacyRewardedBalance, legacyClaimableBalance, legacyStatus
+    
+      //const legacyPoolAddress = getLegacyPoolAddress(poolAddressStr);
+      const [esdBalance,
+             esdAllowance,
+             esdsBalance,
+             esdSupply,
+             esdsSupply,
+             stagedBalance,
+             bondedBalance,
+             status, 
+             fluidUntilStr,
+             lockedUntilStr,
+             redeemableStr,
+             poolTotalBondedStr,
+             pairBalanceESDStr,
+             pairBalanceUSDCStr,
+             uniBalance,
+             usdcBalance,
+             allowance,
+             usdcAllowance,
+             poolStagedBalance,
+             poolBondedBalance,
+             poolRewardedBalance,             
+             poolClaimableBalance,             
+             poolStatus,
+             FluidUntil
       ] = await Promise.all([
         getTokenBalance(ESD.addr, user),
         getTokenAllowance(ESD.addr, user, ESDS.addr),
         getTokenBalance(ESDS.addr, user),
+        getTokenTotalSupply(ESD.addr),
         getTokenTotalSupply(ESDS.addr),
         getBalanceOfStaged(ESDS.addr, user),
         getBalanceBonded(ESDS.addr, user),
         getStatusOf(ESDS.addr, user),
-        getPoolAddress(),
+         
         getFluidUntil(ESDS.addr, user),
         getLockedUntil(ESDS.addr, user),
         getTotalRedeemable(ESDS.addr),
@@ -153,27 +216,24 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         getTokenBalance(USDC.addr, UNI.addr),
         getTokenBalance(UNI.addr, user),
         getTokenBalance(USDC.addr, user),
-
         getTokenAllowance(UNI.addr, user, poolAddressStr),
         getTokenAllowance(USDC.addr, user, poolAddressStr),
         getPoolBalanceOfStaged(poolAddressStr, user),
         getPoolBalanceOfBonded(poolAddressStr, user),
-
         getPoolBalanceOfRewarded(poolAddressStr, user),
         getPoolBalanceOfClaimable(poolAddressStr, user),
         getPoolStatusOf(poolAddressStr, user),
         getPoolFluidUntil(poolAddressStr, user),
 
-        getPoolBalanceOfStaged(legacyPoolAddress, user),
-        getPoolBalanceOfBonded(legacyPoolAddress, user),
-        getPoolBalanceOfRewarded(legacyPoolAddress, user),
-        getPoolBalanceOfClaimable(legacyPoolAddress, user),
-        getPoolStatusOf(legacyPoolAddress, user)
+
+       
 
       ]);
-
+         
       const userESDBalance = toTokenUnitsBN(esdBalance, ESD.decimals);
       const userESDSBalance = toTokenUnitsBN(esdsBalance, ESDS.decimals);
+      const totalESDSupply = toTokenUnitsBN(esdSupply, ESD.decimals);
+       
       const totalESDSSupply = toTokenUnitsBN(esdsSupply, ESDS.decimals);
       const userStagedBalance = toTokenUnitsBN(stagedBalance, ESDS.decimals);
       const userBondedBalance = toTokenUnitsBN(bondedBalance, ESDS.decimals);
@@ -186,28 +246,31 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       const poolTotalBonded = toTokenUnitsBN(poolTotalBondedStr, ESD.decimals);
       const pairESDBalance = toTokenUnitsBN(pairBalanceESDStr, ESD.decimals);
       const pairUSDCBalance = toTokenUnitsBN(pairBalanceUSDCStr, USDC.decimals);
-      const userUNIBalance = toTokenUnitsBN(balance, UNI.decimals);
+      const userUNIBalance = toTokenUnitsBN(uniBalance, UNI.decimals);
       const userUSDCBalance = toTokenUnitsBN(usdcBalance, USDC.decimals);
-      const userRewardedBalance = toTokenUnitsBN(rewardedBalance, ESD.decimals);
-      const userClaimableBalance = toTokenUnitsBN(claimableBalance, ESD.decimals);
-      const legacyUserStagedBalance = toTokenUnitsBN(legacyStagedBalance, UNI.decimals);
-      const legacyUserBondedBalance = toTokenUnitsBN(legacyBondedBalance, UNI.decimals);
-      const legacyUserRewardedBalance = toTokenUnitsBN(legacyRewardedBalance, UNI.decimals);
-      const legacyUserClaimableBalance = toTokenUnitsBN(legacyClaimableBalance, ESD.decimals);
-      const legacyUserStatus = parseInt(legacyStatus, 10);
+      const userRewardedBalance = toTokenUnitsBN(poolRewardedBalance, ESD.decimals);
+      const userClaimableBalance = toTokenUnitsBN(poolClaimableBalance, ESD.decimals);
+      const legacyUserStagedBalance = toTokenUnitsBN(poolStagedBalance, UNI.decimals);
+      const legacyUserBondedBalance = toTokenUnitsBN(poolBondedBalance, UNI.decimals);
+      const legacyUserRewardedBalance = toTokenUnitsBN(poolRewardedBalance, UNI.decimals);
+      const legacyUserClaimableBalance = toTokenUnitsBN(poolClaimableBalance, ESD.decimals);
+      const legacyUserStatus = parseInt(poolStatus, 10);
       
+ 
       if (!isCancelled) {
-        setEpochTime(epochformatted())
+        const epochTime=await getEpochTime(ESDS.addr)
+        setEpochTime(epochformatted(epochTime))
         setUserESDBalance(new BigNumber(userESDBalance));
         setUserESDAllowance(new BigNumber(esdAllowance));
         setUserESDSBalance(new BigNumber(userESDSBalance));
+        setTotalESDSupply(new BigNumber(totalESDSupply));
         setTotalESDSSupply(new BigNumber(totalESDSSupply));
         setUserStagedBalance(new BigNumber(userStagedBalance));
         setUserBondedBalance(new BigNumber(userBondedBalance));
         setRedeemable(new BigNumber(totalRedeemable));
         setUserStatus(userStatus);
         setUserStatusUnlocked(Math.max(fluidUntil, lockedUntil))
-        setLockup(poolAddress === DollarPool4 ? DAO_EXIT_LOCKUP_EPOCHS : 1);
+  /*       setLockup(poolAddress === DollarPool4 ? DAO_EXIT_LOCKUP_EPOCHS : 1); */
         setPoolAddress(poolAddressStr);
         setPoolTotalBonded(new BigNumber(poolTotalBonded));
         setPairBalanceESD(new BigNumber(pairESDBalance));
@@ -222,18 +285,20 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         setUserClaimableBalance(new BigNumber(userClaimableBalance));
         setUserStatus(userStatus);
         setUserStatusUnlocked(fluidUntil);
-        setLegacyUserStagedBalance(new BigNumber(legacyUserStagedBalance));
-        setLegacyUserBondedBalance(new BigNumber(legacyUserBondedBalance));
-        setLegacyUserRewardedBalance(new BigNumber(legacyUserRewardedBalance));
-        setLegacyUserClaimableBalance(new BigNumber(legacyUserClaimableBalance));
-        setLegacyUserStatus(legacyUserStatus);
-        setLockup(poolAddressStr === DollarPool4 ? POOL_EXIT_LOCKUP_EPOCHS : 1);
+        setPoolUserStagedBalance(new BigNumber(legacyUserStagedBalance));
+        setPoolUserBondedBalance(new BigNumber(legacyUserBondedBalance));
+        setPoolUserRewardedBalance(new BigNumber(legacyUserRewardedBalance));
+        setPoolUserClaimableBalance(new BigNumber(legacyUserClaimableBalance));
+        setPoolUserStatus(legacyUserStatus);
+
+         
+        //setLockup(poolAddressStr === DollarPool4 ? POOL_EXIT_LOCKUP_EPOCHS : 1);
       }
     }
     updateUserInfo();
-    const id = setInterval(updateUserInfo, 15000);
+    const id = setInterval(updateUserInfo, 1000);
     // eslint-disable-next-line consistent-return
-    
+   
     return () => {
       isCancelled = true;
       clearInterval(id);
@@ -241,9 +306,9 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   }, [user]);
 
   // Check for error in .call()
-  const isRewardedNegative = legacyUserRewardedBalance.isGreaterThan(new BigNumber("1000000000000000000"));
-  const hasLegacyBalance = legacyUserStagedBalance.isGreaterThan(0) || legacyUserClaimableBalance.isGreaterThan(0) || legacyUserBondedBalance.isGreaterThan(0);
-  
+  const isRewardedNegative = poolUserRewardedBalance.isGreaterThan(new BigNumber("1000000000000000000"));
+  const hasLegacyBalance = poolUserStagedBalance.isGreaterThan(0) || poolUserClaimableBalance.isGreaterThan(0) || poolUserBondedBalance.isGreaterThan(0);
+ 
 
   return (
     <>
@@ -253,10 +318,10 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         <img style={{zIndex:2}} src={yaiLogo} alt="YAI Logo"/>
         <div className="yai-dash-total-container">
           <p className="yai-dash-total-title">YAI TOTAL SUPPLY</p>
-          <p className="yai-dash-total-value">---,---,---</p>
+          <p className="yai-dash-total-value">{totalESDSupply.toNumber()}</p>
         </div>
         <div className="yai-dash-info-container">
-          <p>1 YAI =  --.--- DAI</p>
+          <p>1 YAI =  --.--- DAI {userESDAllowance.toNumber()}</p>
           <p>SPOT PRICE ¥---</p>
           <p>NEXT EPOCH {epochTime}</p>
 
@@ -279,7 +344,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
           </div>
           <div>
             <div className="yai-card-content">
-              <p>Wallet (Trade YAI)</p>
+              <p>Wallet (Trade YAI){userESDBalance.toNumber()}</p>
               <p>--</p>
             </div>
             <div className="yai-card-content">
@@ -287,7 +352,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
               <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
-              <p>Bonded</p>
+              <p>Bonded {userBondedBalance.toNumber()}</p>
               <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
@@ -339,7 +404,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
               <p>--</p>
             </div>
             <div className="yai-card-content">
-              <p>Staged</p>
+              <p>Staged {userStagedBalance.toNumber()}</p>
               <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
@@ -386,6 +451,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         userStagedBalance={userStagedBalance}
         userBondedBalance ={userBondedBalance}
         setModal = {setIsManageDAOModal}
+        approve={ApproveDAO}
+        deposit={DepostYAIToDAO}
+        withdraw={WithdrawYAIFromDAO}
+        bond={BondYAITODAO}
+        unbond={UnbondYAIFromDAO}
         />}
         {isManageLPModal && user && <ManageLPModal 
         user={user}

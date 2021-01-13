@@ -24,7 +24,7 @@ import Provide from "./Provide";
 import IconHeader from "../common/IconHeader";
 import Migrate from "./Migrate";
 import {getLegacyPoolAddress, getPoolAddress} from "../../utils/pool";
-import {DollarPool4} from "../../constants/contracts";
+//import {DollarPool4} from "../../constants/contracts";
 
 
 
@@ -151,7 +151,7 @@ function Pool({ user }: {user: string}) {
         setLegacyUserRewardedBalance(new BigNumber(legacyUserRewardedBalance));
         setLegacyUserClaimableBalance(new BigNumber(legacyUserClaimableBalance));
         setLegacyUserStatus(legacyUserStatus);
-        setLockup(poolAddressStr === DollarPool4 ? POOL_EXIT_LOCKUP_EPOCHS : 1);
+        //setLockup(poolAddressStr === DollarPool4 ? POOL_EXIT_LOCKUP_EPOCHS : 1);
       }
     }
     updateUserInfo();
