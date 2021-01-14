@@ -561,6 +561,8 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         userStagedBalance={userStagedBalance}
         userBondedBalance ={userBondedBalance}
         setModal = {setIsManageCoupons}
+
+        
         />}
 
          {isManageRewardsModal && user && <ManageRewardsModal 
