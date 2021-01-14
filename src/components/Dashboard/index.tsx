@@ -168,6 +168,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
     }
     let isCancelled = false;
 
+    
     async function updateUserInfo() {
        
        
@@ -295,6 +296,9 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         //setLockup(poolAddressStr === DollarPool4 ? POOL_EXIT_LOCKUP_EPOCHS : 1);
       }
     }
+
+   
+
     updateUserInfo();
     const id = setInterval(updateUserInfo, 1000);
     // eslint-disable-next-line consistent-return
@@ -308,7 +312,15 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   // Check for error in .call()
   const isRewardedNegative = poolUserRewardedBalance.isGreaterThan(new BigNumber("1000000000000000000"));
   const hasLegacyBalance = poolUserStagedBalance.isGreaterThan(0) || poolUserClaimableBalance.isGreaterThan(0) || poolUserBondedBalance.isGreaterThan(0);
- 
+  
+  let formatNumber = (number) =>{
+    var formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+    
+    return formatter.format(number);
+  }
 
   return (
     <>
@@ -318,10 +330,10 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         <img style={{zIndex:2}} src={yaiLogo} alt="YAI Logo"/>
         <div className="yai-dash-total-container">
           <p className="yai-dash-total-title">YAI TOTAL SUPPLY</p>
-          <p className="yai-dash-total-value">{totalESDSupply.toNumber()}</p>
+          <p className="yai-dash-total-value">{totalESDSupply.toNumber().toFixed(2).toString().replace(/\d(?=(\d{3})+\.)/g, '$&,')}</p>
         </div>
         <div className="yai-dash-info-container">
-          <p>1 YAI =  --.--- DAI {userESDAllowance.toNumber()}</p>
+          <p>1 YAI =  --.--- DAI</p>
           <p>SPOT PRICE ¥---</p>
           <p>NEXT EPOCH {epochTime}</p>
 
@@ -352,7 +364,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
               <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
-              <p>Bonded {userBondedBalance.toNumber()}</p>
+              <p>Bonded</p>
               <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
@@ -404,12 +416,12 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
               <p>--</p>
             </div>
             <div className="yai-card-content">
-              <p>Staged {userStagedBalance.toNumber()}</p>
-              <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
+              <p>Staged</p>
+              <BalanceBlock  balance={poolUserStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
               <p>Bonded</p>
-              <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
+              <BalanceBlock  balance={poolUserBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
           <div
@@ -422,11 +434,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             <h5 className="yai-card-subtitle">Coupons</h5>
             <div className="yai-card-content">
               <p>Earned</p>
-              <BalanceBlock  balance={isRewardedNegative ? new BigNumber(0) : userRewardedBalance} suffix={" YAI"}/>
+              <BalanceBlock  balance={isRewardedNegative ? new BigNumber(0) : poolUserRewardedBalance} suffix={" YAI"}/>
             </div>
             <div className="yai-card-content">
               <p>Claimable</p>
-              <BalanceBlock  balance={userClaimableBalance} suffix={" YAI"}/>
+              <BalanceBlock  balance={poolUserClaimableBalance} suffix={" YAI"}/>
               
             </div>    
           </div>

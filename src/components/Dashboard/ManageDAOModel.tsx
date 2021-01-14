@@ -214,7 +214,7 @@ const ManageDAOModal = ({
                                 </div>
                             </div> :<div
                             className="yai-modal-button"
-                            onClick={()=>{handleApproveButton(setIsApproved)}}
+                            onClick={()=>{approve()}}
                             >                
                             Approve
                         </div>
