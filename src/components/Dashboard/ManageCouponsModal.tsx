@@ -45,10 +45,11 @@ type Props = {
     userStagedBalance: BigNumber,
     userBondedBalance: BigNumber,
     setModal: Function,
+     
   };
 
 const ManageCouponsModal = ({
-    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal
+    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal, 
   }: Props) => {
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);

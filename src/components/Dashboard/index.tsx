@@ -10,7 +10,7 @@ import {
   getBalanceBonded,
   getBalanceOfStaged, getFluidUntil, getLockedUntil,
   getStatusOf, getTokenAllowance,
-  getTokenBalance, getTokenTotalSupply, getTotalRedeemable,getEpochTime
+  getTokenBalance, getTokenTotalSupply, getTotalRedeemable,getEpochTime,getTotalCoupons
 } from '../../utils/infura';
 import {
   getPoolBalanceOfBonded, getPoolBalanceOfClaimable,
@@ -26,7 +26,7 @@ import { toTokenUnitsBN } from '../../utils/number';
 import {isPos, toBaseUnitBN} from '../../utils/number';
 import AccountPageHeader from "./Header";
 import WithdrawDeposit from "./WithdrawDeposit";
-import {approve, deposit, withdraw,bond,unbondUnderlying} from '../../utils/web3';
+import {approve, deposit, withdraw,bond,unbondUnderlying,depositPool,withdrawPool,bondPool,unbondPool,redeemCoupons} from '../../utils/web3';
 import BondUnbond from "./BondUnbond";
 import {getLegacyPoolAddress,getPoolAddress} from "../../utils/pool";
 //import {DollarPool4} from "../../constants/contracts";
@@ -37,6 +37,9 @@ import ManageDAOModel from './ManageDAOModel'
 import ManageLPModal from './ManageLPModal'
 import ManageCouponsModal from './ManageCouponsModal'
 import ManageRewardsModal from './ManageRewardsModal'
+import { PollingWatchKind } from 'typescript';
+import Pool from '../Pool';
+import { unix } from 'moment';
 
 
   function epochformatted(epochTime) {
@@ -47,10 +50,17 @@ import ManageRewardsModal from './ManageRewardsModal'
   const hour = 60 * 60;
   const minute = 60;
   let epochRemainder =  parseInt(epochTime, 10) *epochPeriod
+  console.log(epochRemainder)
+
 
   epochRemainder=epochRemainder+epochStart
+  console.log(epochRemainder)
+  
   epochRemainder=Math.floor(Date.now() / 1000)-epochRemainder
+  console.log(epochRemainder)
+  
   epochRemainder=epochPeriod-epochRemainder
+  
   const epochHour = Math.floor(epochRemainder / hour);
   epochRemainder -= epochHour * hour;
   const epochMinute = Math.floor(epochRemainder / minute);
@@ -69,16 +79,34 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const ApproveDAO=()=>{
     approve(ESD.addr, ESDS.addr)
   } 
+  const ApproveLP=()=>{
+    approve( UNI.addr,poolAddress)
+  } 
   const DepostYAIToDAO=(depositAmount)=>{
     deposit(
       ESDS.addr,
       toBaseUnitBN(depositAmount , ESD.decimals))
      
   }
+  const DepositUNItoPool=(depositAmount)=>{
+    depositPool(
+      poolAddress,
+      toBaseUnitBN(depositAmount, UNI.decimals),
+      (hash) => console.log(hash))
+    
+  }
   const WithdrawYAIFromDAO=(withdrawAmount)=>{
     withdraw(
       ESDS.addr,
       toBaseUnitBN(withdrawAmount, ESD.decimals),
+    )
+     
+  }
+  const WithdrawUNIFromPool=(withdrawAmount)=>{
+    withdrawPool(
+      poolAddress,
+      toBaseUnitBN(withdrawAmount, UNI.decimals),
+      (hash) =>  console.log(hash)
     )
      
   }
@@ -94,6 +122,29 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       toBaseUnitBN(unbondAmount, ESD.decimals),
     )
   }
+  const BondUNIOPool=(bondAmount)=>{
+    bondPool(
+      poolAddress,
+      toBaseUnitBN(bondAmount, UNI.decimals),
+      (hash) =>  console.log(hash)
+    )
+  }
+  const UnbondUNIFromPool=(unbondAmount)=>{
+    unbondPool(
+      poolAddress,
+      toBaseUnitBN(unbondAmount, UNI.decimals),
+      (hash) =>  console.log(hash)
+    )
+  }
+  const Redeem=(totalRedeemable)=>{
+   /*  redeemCoupons(
+      ESDS.addr,
+      epoch.epoch,
+      epoch.balance.isGreaterThan(toBaseUnitBN(totalRedeemable, ESD.decimals))
+        ? toBaseUnitBN(totalRedeemable, ESD.decimals)
+        : epoch.balance
+    ) */
+  }
   const [epochTime, setEpochTime] = useState("00:00:00");
   const [userESDBalance, setUserESDBalance] = useState(new BigNumber(0));
   const [userESDAllowance, setUserESDAllowance] = useState(new BigNumber(0));
@@ -106,6 +157,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const [userStatusUnlocked, setUserStatusUnlocked] = useState(0);
   const [lockup, setLockup] = useState(0);
   const [redeemable, setRedeemable] = useState(new BigNumber(0));
+  const [purchased,setPurchased]=useState(new BigNumber(0));
 
   const [isManageDAOModal,setIsManageDAOModal] = useState(false);
   const [isManageLPModal,setIsManageLPModal] = useState(false);
@@ -118,7 +170,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const [pairBalanceESD, setPairBalanceESD] = useState(new BigNumber(0));
   const [pairBalanceUSDC, setPairBalanceUSDC] = useState(new BigNumber(0));
   const [userUNIBalance, setUserUNIBalance] = useState(new BigNumber(0));
-  const [userUNIAllowance, setUserUNIAllowance] = useState(new BigNumber(0));
+  const [userUNIAllowance, setUserUNIAllowance] = useState(new BigNumber(0));//LP 
   const [userUSDCBalance, setUserUSDCBalance] = useState(new BigNumber(0));
   const [userUSDCAllowance, setUserUSDCAllowance] = useState(new BigNumber(0));
   const [userRewardedBalance, setUserRewardedBalance] = useState(new BigNumber(0));
@@ -142,14 +194,15 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       setTotalESDSSupply(new BigNumber(0));
       setUserStagedBalance(new BigNumber(0));
       setUserBondedBalance(new BigNumber(0));
-      setRedeemable(new BigNumber(0));      
+      setRedeemable(new BigNumber(0));    
+      setPurchased(new BigNumber(0));  
       setUserStatus(0);
       setIsManageDAOModal(false)
       setPoolAddress("");
       setPoolTotalBonded(new BigNumber(0));
       setPairBalanceESD(new BigNumber(0));
       setPairBalanceUSDC(new BigNumber(0));
-      setUserUNIBalance(new BigNumber(0));
+      setUserUNIBalance(new BigNumber(0)); //LP wallet amount userUNIBalance
       setUserUNIAllowance(new BigNumber(0));
       setUserUSDCBalance(new BigNumber(0));
       setUserUSDCAllowance(new BigNumber(0));
@@ -174,7 +227,14 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       const poolAddressStr = await getPoolAddress();
     
       //const legacyPoolAddress = getLegacyPoolAddress(poolAddressStr);
-      const [esdBalance,
+      /**
+       * blalanalmalalla
+       * input a
+       * b
+       * output c
+       */
+      const [ 
+             esdBalance,
              esdAllowance,
              esdsBalance,
              esdSupply,
@@ -185,6 +245,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
              fluidUntilStr,
              lockedUntilStr,
              redeemableStr,
+             purchasedStr,
              poolTotalBondedStr,
              pairBalanceESDStr,
              pairBalanceUSDCStr,
@@ -199,6 +260,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
              poolStatus,
              FluidUntil
       ] = await Promise.all([
+         
         getTokenBalance(ESD.addr, user),
         getTokenAllowance(ESD.addr, user, ESDS.addr),
         getTokenBalance(ESDS.addr, user),
@@ -211,6 +273,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         getFluidUntil(ESDS.addr, user),
         getLockedUntil(ESDS.addr, user),
         getTotalRedeemable(ESDS.addr),
+        getTotalCoupons(ESDS.addr),
         getPoolTotalBonded(poolAddressStr),
         getTokenBalance(ESD.addr, UNI.addr),
         getTokenBalance(USDC.addr, UNI.addr),
@@ -229,7 +292,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
        
 
       ]);
-         
+      
       const userESDBalance = toTokenUnitsBN(esdBalance, ESD.decimals);
       const userESDSBalance = toTokenUnitsBN(esdsBalance, ESDS.decimals);
       const totalESDSupply = toTokenUnitsBN(esdSupply, ESD.decimals);
@@ -238,6 +301,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       const userStagedBalance = toTokenUnitsBN(stagedBalance, ESDS.decimals);
       const userBondedBalance = toTokenUnitsBN(bondedBalance, ESDS.decimals);
       const totalRedeemable = toTokenUnitsBN(redeemableStr, ESD.decimals);
+      const totalPurchased=toTokenUnitsBN(purchasedStr,ESDS.decimals)
       const userStatus = parseInt(status, 10);
       
       const fluidUntil = parseInt(fluidUntilStr, 10);
@@ -259,6 +323,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
  
       if (!isCancelled) {
         const epochTime=await getEpochTime(ESDS.addr)
+        console.log(epochTime)
         setEpochTime(epochformatted(epochTime))
         setUserESDBalance(new BigNumber(userESDBalance));
         setUserESDAllowance(new BigNumber(esdAllowance));
@@ -268,6 +333,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         setUserStagedBalance(new BigNumber(userStagedBalance));
         setUserBondedBalance(new BigNumber(userBondedBalance));
         setRedeemable(new BigNumber(totalRedeemable));
+        setPurchased(new BigNumber(purchasedStr));
         setUserStatus(userStatus);
         setUserStatusUnlocked(Math.max(fluidUntil, lockedUntil))
   /*       setLockup(poolAddress === DollarPool4 ? DAO_EXIT_LOCKUP_EPOCHS : 1); */
@@ -318,10 +384,10 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         <img style={{zIndex:2}} src={yaiLogo} alt="YAI Logo"/>
         <div className="yai-dash-total-container">
           <p className="yai-dash-total-title">YAI TOTAL SUPPLY</p>
-          <p className="yai-dash-total-value">{totalESDSupply.toNumber()}</p>
+          <p className="yai-dash-total-value"> <BalanceBlock  balance={totalESDSupply} suffix={" YAI"}/> </p>
         </div>
         <div className="yai-dash-info-container">
-          <p>1 YAI =  --.--- DAI {userESDAllowance.toNumber()}</p>
+          <p>1 YAI =  --.--- DAI </p>
           <p>SPOT PRICE ¥---</p>
           <p>NEXT EPOCH {epochTime}</p>
 
@@ -344,15 +410,15 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
           </div>
           <div>
             <div className="yai-card-content">
-              <p>Wallet (Trade YAI){userESDBalance.toNumber()}</p>
-              <p>--</p>
+              <p>Wallet (Trade YAI) </p>
+              <BalanceBlock  balance={userESDBalance} suffix={" YAI"}/>
             </div>
             <div className="yai-card-content">
               <p>Staged</p>
               <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
-              <p>Bonded {userBondedBalance.toNumber()}</p>
+              <p>Bonded  </p>
               <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
@@ -366,7 +432,8 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             <h5 className="yai-card-subtitle">Coupons</h5>
             <div className="yai-card-content">
               <p>Purchased</p>
-              <p>--</p>
+              <BalanceBlock  balance={purchased} suffix={" YAI"}/>
+              
             </div>
             <div className="yai-card-content">
               <p>Redeemable</p>
@@ -405,11 +472,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             </div>
             <div className="yai-card-content">
               <p>Staged {userStagedBalance.toNumber()}</p>
-              <BalanceBlock  balance={userStagedBalance} suffix={" YAI"}/>
+              <BalanceBlock  balance={poolUserStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
               <p>Bonded</p>
-              <BalanceBlock  balance={userBondedBalance} suffix={" YAI"}/>
+              <BalanceBlock  balance={poolUserBondedBalance} suffix={" YAI"}/>
             </div>   
           </div>
           <div
@@ -459,13 +526,19 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         />}
         {isManageLPModal && user && <ManageLPModal 
         user={user}
-        balance={userESDBalance}
-        allowance={userESDAllowance}
+        balance={userUNIBalance}
+        allowance={userUNIAllowance}
         stagedBalance={userStagedBalance}
         status={userStatus}
-        userStagedBalance={userStagedBalance}
-        userBondedBalance ={userBondedBalance}
+        userStagedBalance={poolUserStagedBalance}
+        userBondedBalance ={poolUserBondedBalance}
         setModal = {setIsManageLPModal}
+        approve={ApproveLP}
+        deposit={DepositUNItoPool}
+        withdraw={WithdrawUNIFromPool}
+        bond={BondUNIOPool}
+        unbond={UnbondUNIFromPool}
+
         />}
         {isManageCoupons && user && <ManageCouponsModal 
         user={user}
@@ -476,6 +549,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         userStagedBalance={userStagedBalance}
         userBondedBalance ={userBondedBalance}
         setModal = {setIsManageCoupons}
+        
         />}
 
       {isManageCoupons && user && <ManageCouponsModal 
