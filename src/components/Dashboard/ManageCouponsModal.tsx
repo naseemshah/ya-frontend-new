@@ -20,29 +20,7 @@ import {
 
 
 
-let handleApproveButton = (setIsApproved)=>{
-    setIsApproved(true)
-}
 
-let handlePurchaseButton = (purchaseAmount) => {
-    purchaseCoupons(
-        ESDS.addr,
-        toBaseUnitBN(purchaseAmount, ESD.decimals),
-      );
-
-}
-
-let handleWithdrawButton = () =>{
-
-}
-
-let handleBondButton = () =>{
-
-}
-
-let handleUnBondButton = () =>{
-    
-}
 
 type Props = {
     user: string
@@ -56,16 +34,16 @@ type Props = {
     approve: Function,
     premium: BigNumber,
     debt: BigNumber
+    setPremium: Function
      
   };
 
 const ManageCouponsModal = ({
-    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal, approve,premium,debt
+    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal, approve,premium,setPremium,debt
   }: Props) => {
     let [isApproved,setIsApproved] = useState(false)
     let [isBondMode,setIsBondMode] = useState(true);
     
-    const [premium2, setPremium] = useState(new BigNumber(0));
 
     let [withdrawAmount, setWithdrawAmount] =  useState(0)
     const [purchaseAmount, setPurchaseAmount] = useState(0);
@@ -107,19 +85,35 @@ const ManageCouponsModal = ({
                         </div>
                         {
                             allowance.comparedTo(MAX_UINT256) === 0 ? <div>
-                                <input 
-                                    className="yai-modal-input"
-                                    onChange={(e)=>{
-                                        
-                                        setPurchaseAmount(parseFloat(e.target.value))
-                                    }}
-                                    type="number"/>
-                                
+                                                           
+                                <div className="input-container">
+                                    <input 
+                                        className="yai-modal-input"
+                                        onChange={(e)=>{
+                                            setPurchaseAmount(parseFloat(e.target.value))
+                                        }}
+                                        value={purchaseAmount}
+                                        defaultValue={purchaseAmount}
+                                        type="number"/>
+
+                                    <button 
+                                        className="input-container-max-button"
+                                        onClick={()=>{
+                                            const maxPurchaseAmount = debt.comparedTo(balance) > 0 ? balance : debt
+                                            setPurchaseAmount(maxPurchaseAmount.toNumber());
+                                            updatePremium(maxPurchaseAmount);
+                                        }}
+                                    >Max</button>
+                                    
+                                </div>
+
                                 <div
                                     className="yai-modal-button"
                                     onClick={()=>{
-                                       handlePurchaseButton(purchaseAmount)
-                                       
+                                        purchaseCoupons(
+                                            ESDS.addr,
+                                            toBaseUnitBN(purchaseAmount, ESD.decimals),
+                                          );                                  
                                     
                                     }}
                                     >                
@@ -315,6 +309,26 @@ let Modal = styled.div`
         padding: 10px;
         border-radius: 10px;
                 
+    }
+
+    .input-container{
+        position: relative;
+        .input-container-max-button{
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-2px);
+            background-color: #CF0300;
+            border: none;
+            font-weight: bold;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            :hover{
+                background-color: #a50402;
+
+            }
+        }
     }
 
     @media only screen and (max-width: 550px){

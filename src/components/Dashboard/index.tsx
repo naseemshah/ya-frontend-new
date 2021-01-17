@@ -618,6 +618,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         setModal = {setIsManageCoupons}
         approve={ApproveDAO}
         premium={couponPremium}
+        setPremium = {setCouponPremium}
         debt={debt}
         
         />}
@@ -655,6 +656,8 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             approve={ApproveLP}
             userUSDCBalance = {userUSDCBalance}
             poolAddress= {poolAddress}
+            pairBalanceESD={pairBalanceESD}
+            pairBalanceUSDC={pairBalanceUSDC}
         />}
 
       

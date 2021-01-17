@@ -2,13 +2,13 @@ import React, {useState} from 'react';
 import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
 import {ESD, ESDS} from "../../constants/tokens";
-import {isPos, toBaseUnitBN} from '../../utils/number';
+import {isPos, toBaseUnitBN,  toTokenUnitsBN} from '../../utils/number';
 import { bond, unbondUnderlying } from '../../utils/web3';
 import BalanceBlock from './BalanceBlock'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import ToggleButton from 'react-toggle-button'
 import {MAX_UINT256} from "../../constants/values";
-import {claimPool} from '../../utils/web3';
+import {claimPool, providePool} from '../../utils/web3';
 
 
 
@@ -20,12 +20,7 @@ import {
 
 
 
-let handleClaimButton = () => {
 
-}
-let handleLPClaimButton = () =>{
-
-}
 
 
 type Props = {
@@ -42,20 +37,42 @@ type Props = {
     approve: Function,
     userUSDCBalance: BigNumber,
     poolAddress: string
-
+    pairBalanceESD: BigNumber,
+    pairBalanceUSDC: BigNumber,
   };
 
 const ManageLPModal = ({
-    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal,claimable,rewarded,approve, userUSDCBalance, poolAddress
+    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal,claimable,rewarded,approve, userUSDCBalance, poolAddress, 
+    pairBalanceESD,pairBalanceUSDC
   }: Props) => {
   const [claimAmount, setClaimAmount] = useState(new BigNumber(0));
-  const [LPAmount, setLPAmount] = useState(0);
+  const [LPAmount, setLPAmount] = useState(new BigNumber(0));
 
   const [bondAmount, setBondAmount] = useState(0);
   const [unBondAmount, setUnBondAmount] = useState(0);
   let [isApproved,setIsApproved] = useState(false)
   let [isStageModeDeposite,setIsStageModeDeposite] = useState(true);
   let [isBondMode,setIsBondMode] = useState(true);
+
+  const [usdcAmount, setUsdcAmount] = useState(new BigNumber(0));
+
+  const USDCToESDRatio = pairBalanceUSDC.isZero() ? new BigNumber(1) : pairBalanceUSDC.div(pairBalanceESD);
+  const onChangeAmountESD = (amountESD) => {
+    if (!amountESD) {
+      setLPAmount(new BigNumber(0));
+      setUsdcAmount(new BigNumber(0));
+      return;
+    }
+
+    const amountESDBN = new BigNumber(amountESD)
+    setLPAmount(amountESDBN);
+
+    const amountESDBU = toBaseUnitBN(amountESDBN, ESD.decimals);
+    const newAmountUSDC = toTokenUnitsBN(
+      amountESDBU.multipliedBy(USDCToESDRatio).integerValue(BigNumber.ROUND_FLOOR),
+      ESD.decimals);
+    setUsdcAmount(newAmountUSDC);
+  };
     
     return(
         <Modal className="yai-modal">
@@ -88,7 +105,7 @@ const ManageLPModal = ({
                                     <button 
                                         className="input-container-max-button"
                                         onClick={()=>{
-                                            setClaimAmount(claimable);
+                                            // setClaimAmount(claimable);
                                         }}
                                     >Max</button>
                                     
@@ -139,23 +156,40 @@ const ManageLPModal = ({
                        
                        {
                            allowance.comparedTo(MAX_UINT256) === 0 ? <div>
-                               <input 
-                                   className="yai-modal-input"
-                                   onChange={(e)=>{
+                              
+                                <div className="input-container">
+                                    <input 
+                                        className="yai-modal-input"
+                                        onChange={(e)=>{
                                        
-                                       setLPAmount(parseFloat(e.target.value))
-                                   }}
-                                   type="number"/>
+                                            setLPAmount(new BigNumber(parseFloat(e.target.value)))
+                                        }}
+                                        type="number"/>
+
+                                    <button 
+                                        className="input-container-max-button"
+                                        onClick={()=>{
+                                            
+                                        }}
+                                    >Max</button>
+                                    
+                                </div>
                               
                                <div
                                    className="yai-modal-button"
                                    onClick={()=>{
-                                      handleLPClaimButton()
+                                    
+                                        providePool(
+                                          poolAddress,
+                                          toBaseUnitBN(LPAmount, ESD.decimals),
+                                          (hash) => setLPAmount(new BigNumber(0))
+                                        );
+                                     
                                       
                                    
                                    }}
                                    >                
-                                  {`Add to LP ${LPAmount>0 ? LPAmount : ""}`}
+                                  {`Add to LP ${LPAmount.toNumber()>0 ? LPAmount : ""}`}
                                </div>
                            </div> :<div
                            className="yai-modal-button"
