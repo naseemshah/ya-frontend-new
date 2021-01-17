@@ -5,20 +5,31 @@ import BigNumber from 'bignumber.js';
 import yaiLogo from '../common/yai-logo.svg'
 import headerImage from './headerimage.png'
 import ConnectWalletButton from '../NavBar/ConnectButton';
+import {getPreference, storePreference} from "../../utils/storage";
+
+
 
 import {
   getBalanceBonded,
   getBalanceOfStaged, getFluidUntil, getLockedUntil,
   getStatusOf, getTokenAllowance,
-  getTokenBalance, getTokenTotalSupply, getTotalRedeemable,getEpochTime,getTotalCoupons
-} from '../../utils/infura';
-import {
+  getTokenBalance, getTokenTotalSupply, getTotalRedeemable,getEpochTime,getTotalCoupons,
   getPoolBalanceOfBonded, getPoolBalanceOfClaimable,
   getPoolBalanceOfRewarded,
   getPoolBalanceOfStaged,
   getPoolStatusOf, getPoolTotalBonded,
-  getPoolFluidUntil
+  getPoolFluidUntil,getCouponPremium,
+  getTotalDebt
+
 } from '../../utils/infura';
+// import {
+//   getPoolBalanceOfBonded, getPoolBalanceOfClaimable,
+//   getPoolBalanceOfRewarded,
+//   getPoolBalanceOfStaged,
+//   getPoolStatusOf, getPoolTotalBonded,
+//   getPoolFluidUntil,getCouponPremium,
+//   getTotalDebt
+// } from '../../utils/infura';
 import {ESD, ESDS, UNI, USDC} from "../../constants/tokens";
 import {DAO_EXIT_LOCKUP_EPOCHS} from "../../constants/values";
 import { toTokenUnitsBN } from '../../utils/number';
@@ -72,6 +83,7 @@ import { unix } from 'moment';
 }
 
 function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string, setUser: Function}) {
+  const ONE_COUPON = new BigNumber(10).pow(18);
   const { override } = useParams();
   if (override) {
     user = override;
@@ -181,6 +193,18 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
   const [poolUserClaimableBalance, setPoolUserClaimableBalance] = useState(new BigNumber(0));
   const [poolUserStatus, setPoolUserStatus] = useState(0);
   const [poolFluidUntil,setPoolFluidUntil]=useState(0);
+  
+  
+  const storedHideRedeemed = getPreference('hideRedeemedCoupons', '0');
+
+  const [balance, setBalance] = useState(new BigNumber(0));
+  const [allowance, setAllowance] = useState(new BigNumber(0));
+  const [supply, setSupply] = useState(new BigNumber(0));
+  const [coupons, setCoupons] = useState(new BigNumber(0));
+  const [couponPremium, setCouponPremium] = useState(new BigNumber(0));
+  const [debt, setDebt] = useState(new BigNumber(0));
+  const [hideRedeemed, setHideRedeemed] = useState(storedHideRedeemed === '1');
+
  
   //Update User balances
   useEffect(() => {
@@ -217,6 +241,10 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       setPoolUserRewardedBalance(new BigNumber(0));
       setPoolUserClaimableBalance(new BigNumber(0));
       setPoolUserStatus(0);
+      setBalance(new BigNumber(0));
+      setAllowance(new BigNumber(0));
+
+
       return;
     }
     let isCancelled = false;
@@ -319,6 +347,15 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
       const legacyUserRewardedBalance = toTokenUnitsBN(poolRewardedBalance, UNI.decimals);
       const legacyUserClaimableBalance = toTokenUnitsBN(poolClaimableBalance, ESD.decimals);
       const legacyUserStatus = parseInt(poolStatus, 10);
+
+
+      const [balanceStr, allowanceStr] = await Promise.all([
+        getTokenBalance(ESD.addr, user),
+        getTokenAllowance(ESD.addr, user, ESDS.addr),
+      ]);
+
+      const userBalance = toTokenUnitsBN(balanceStr, ESD.decimals);
+
       
  
       if (!isCancelled) {
@@ -359,12 +396,57 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
 
          
         //setLockup(poolAddressStr === DollarPool4 ? POOL_EXIT_LOCKUP_EPOCHS : 1);
+
+
+        setBalance(new BigNumber(userBalance));
+        setAllowance(new BigNumber(allowanceStr));
+        (new BigNumber(allowanceStr));
       }
     }
     updateUserInfo();
     const id = setInterval(updateUserInfo, 1000);
     // eslint-disable-next-line consistent-return
    
+    return () => {
+      isCancelled = true;
+      clearInterval(id);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function updateUserInfo() {
+      const [supplyStr, debtStr, couponsStr, redeemableStr] = await Promise.all([
+        getTokenTotalSupply(ESD.addr),
+        getTotalDebt(ESDS.addr),
+        getTotalCoupons(ESDS.addr),
+        getTotalRedeemable(ESDS.addr),
+      ]);
+
+      const totalSupply = toTokenUnitsBN(supplyStr, ESD.decimals);
+      const totalDebt = toTokenUnitsBN(debtStr, ESD.decimals);
+      const totalCoupons = toTokenUnitsBN(couponsStr, ESD.decimals);
+      const totalRedeemable = toTokenUnitsBN(redeemableStr, ESD.decimals);
+
+      if (!isCancelled) {
+        setSupply(new BigNumber(totalSupply));
+        setDebt(new BigNumber(totalDebt));
+        setCoupons(new BigNumber(totalCoupons));
+        setRedeemable(new BigNumber(totalRedeemable));
+
+        if (totalDebt.isGreaterThan(new BigNumber(1))) {
+          const couponPremiumStr = await getCouponPremium(ESDS.addr, ONE_COUPON)
+          setCouponPremium(toTokenUnitsBN(couponPremiumStr, ESD.decimals));
+        } else {
+          setCouponPremium(new BigNumber(0));
+        }
+      }
+    }
+    updateUserInfo();
+    const id = setInterval(updateUserInfo, 15000);
+
+    // eslint-disable-next-line consistent-return
     return () => {
       isCancelled = true;
       clearInterval(id);
@@ -471,7 +553,7 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
               <p>--</p>
             </div>
             <div className="yai-card-content">
-              <p>Staged {userStagedBalance.toNumber()}</p>
+              <p>Staged</p>
               <BalanceBlock  balance={poolUserStagedBalance} suffix={" YAI"}/>
             </div> 
             <div className="yai-card-content">
@@ -524,6 +606,22 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         bond={BondYAITODAO}
         unbond={UnbondYAIFromDAO}
         />}
+
+         {isManageCoupons && user && <ManageCouponsModal 
+        user={user}
+        balance={userESDBalance}
+        allowance={userESDAllowance}
+        stagedBalance={userStagedBalance}
+        status={userStatus}
+        userStagedBalance={userStagedBalance}
+        userBondedBalance ={userBondedBalance}
+        setModal = {setIsManageCoupons}
+        approve={ApproveDAO}
+        premium={couponPremium}
+        debt={debt}
+        
+        />}
+        
         {isManageLPModal && user && <ManageLPModal 
         user={user}
         balance={userUNIBalance}
@@ -540,30 +638,8 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
         unbond={UnbondUNIFromPool}
 
         />}
-        {isManageCoupons && user && <ManageCouponsModal 
-        user={user}
-        balance={userESDBalance}
-        allowance={userESDAllowance}
-        stagedBalance={userStagedBalance}
-        status={userStatus}
-        userStagedBalance={userStagedBalance}
-        userBondedBalance ={userBondedBalance}
-        setModal = {setIsManageCoupons}
-        
-        />}
+       
 
-      {isManageCoupons && user && <ManageCouponsModal 
-        user={user}
-        balance={userESDBalance}
-        allowance={userESDAllowance}
-        stagedBalance={userStagedBalance}
-        status={userStatus}
-        userStagedBalance={userStagedBalance}
-        userBondedBalance ={userBondedBalance}
-        setModal = {setIsManageCoupons}
-
-        
-        />}
 
          {isManageRewardsModal && user && <ManageRewardsModal 
             user={user}

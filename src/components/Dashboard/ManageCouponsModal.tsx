@@ -1,13 +1,17 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
-import {approve, deposit, withdraw} from '../../utils/web3';
+import {approve, deposit, withdraw,purchaseCoupons} from '../../utils/web3';
 import BigNumber from 'bignumber.js';
 import {ESD, ESDS} from "../../constants/tokens";
-import {isPos, toBaseUnitBN} from '../../utils/number';
+import {isPos, toBaseUnitBN,toTokenUnitsBN} from '../../utils/number';
 import { bond, unbondUnderlying } from '../../utils/web3';
 import BalanceBlock from './BalanceBlock'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import ToggleButton from 'react-toggle-button'
+import {MAX_UINT256} from "../../constants/values";
+import {getCouponPremium} from "../../utils/infura";
+
+
 
 
 import {
@@ -20,7 +24,11 @@ let handleApproveButton = (setIsApproved)=>{
     setIsApproved(true)
 }
 
-let handleDepositButton = () => {
+let handlePurchaseButton = (purchaseAmount) => {
+    purchaseCoupons(
+        ESDS.addr,
+        toBaseUnitBN(purchaseAmount, ESD.decimals),
+      );
 
 }
 
@@ -45,20 +53,36 @@ type Props = {
     userStagedBalance: BigNumber,
     userBondedBalance: BigNumber,
     setModal: Function,
+    approve: Function,
+    premium: BigNumber,
+    debt: BigNumber
      
   };
 
 const ManageCouponsModal = ({
-    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal, 
+    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal, approve,premium,debt
   }: Props) => {
-  const [depositAmount, setDepositAmount] = useState(0);
-  const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [bondAmount, setBondAmount] = useState(0);
-  const [unBondAmount, setUnBondAmount] = useState(0);
-  let [isApproved,setIsApproved] = useState(false)
-  let [isStageModeDeposite,setIsStageModeDeposite] = useState(true);
-  let [isBondMode,setIsBondMode] = useState(true);
+    let [isApproved,setIsApproved] = useState(false)
+    let [isBondMode,setIsBondMode] = useState(true);
     
+    const [premium2, setPremium] = useState(new BigNumber(0));
+
+    let [withdrawAmount, setWithdrawAmount] =  useState(0)
+    const [purchaseAmount, setPurchaseAmount] = useState(0);
+
+    const updatePremium = async (purchaseAmount) => {
+        if (purchaseAmount.lte(new BigNumber(0))) {
+          setPremium(new BigNumber(0));
+          return;
+        }
+        const purchaseAmountBase = toBaseUnitBN(purchaseAmount, ESD.decimals);
+        const premium = await getCouponPremium(ESDS.addr, purchaseAmountBase)
+        const premiumFormatted = toTokenUnitsBN(premium, ESD.decimals);
+        setPremium(premiumFormatted);
+      };
+
+
+
     return(
         <Modal className="yai-modal">
             <div className="yai-modal-header">
@@ -78,53 +102,32 @@ const ManageCouponsModal = ({
                         <div>
                             <div className="yai-card-content">
                                 <p>Coupon Premium</p>
-                                <p>--%</p>
+                                <p><BalanceBlock balance={premium.multipliedBy(100)} suffix={"%"}/></p>
                             </div>
                         </div>
                         {
-                            isApproved ? <div>
+                            allowance.comparedTo(MAX_UINT256) === 0 ? <div>
                                 <input 
                                     className="yai-modal-input"
                                     onChange={(e)=>{
                                         
-                                        isStageModeDeposite ? setDepositAmount(parseFloat(e.target.value)) : setWithdrawAmount(parseFloat(e.target.value))
+                                        setPurchaseAmount(parseFloat(e.target.value))
                                     }}
                                     type="number"/>
-                                <div 
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        marginTop: '20px',
-                                        fontSize: '25px'
-                                    }}
-                                    className="yai-modal-choose"
-                                >
-                                    
-                                    <p>Withdraw</p> 
-                                    <ToggleButton
-                                        
-                                        inactiveLabel={''}
-                                        activeLabel={''}
-                                        value={ isStageModeDeposite}
-                                        onToggle={() => {
-                                        setIsStageModeDeposite(!isStageModeDeposite)
-                                        }} />
-                                    <p>Deposit</p>
-                                    
-                                </div>
+                                
                                 <div
                                     className="yai-modal-button"
                                     onClick={()=>{
-                                       if(isStageModeDeposite) handleDepositButton()
-                                       else handleWithdrawButton()
+                                       handlePurchaseButton(purchaseAmount)
+                                       
                                     
                                     }}
                                     >                
-                                   {isStageModeDeposite? `Deposit ${depositAmount>0 ? depositAmount : ""}`:`Withdraw ${withdrawAmount>0 ? withdrawAmount : ""}`}
+                                   {`Purchase ${purchaseAmount>0 ? purchaseAmount : ""}`}
                                 </div>
                             </div> :<div
                             className="yai-modal-button"
-                            onClick={()=>{handleApproveButton(setIsApproved)}}
+                            onClick={()=>{approve()}}
                             >                
                             Approve
                         </div>
@@ -137,7 +140,7 @@ const ManageCouponsModal = ({
                             </div>
                             <div className="yai-card-content">
                             <p>Debt</p>
-                            <BalanceBlock  balance={0} suffix={" YAI"}/>
+                            <BalanceBlock  balance={debt} suffix={" YAI"}/>
                             </div> 
                             <div className="yai-card-content">
                             <p>Purchased</p>
@@ -155,49 +158,28 @@ const ManageCouponsModal = ({
                             </div>                                
                         </div>
                         {
-                            isApproved ? <div>
+                            allowance.comparedTo(MAX_UINT256) === 0 ? <div>
                                 <input 
                                     className="yai-modal-input"
                                     onChange={(e)=>{
                                         
-                                        isBondMode ? setBondAmount(parseFloat(e.target.value)) : setUnBondAmount(parseFloat(e.target.value))
+                                        // isBondMode ? setBondAmount(parseFloat(e.target.value)) : setUnBondAmount(parseFloat(e.target.value))
                                     }}
                                     type="number"/>
-                                <div 
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        marginTop: '20px',
-                                        fontSize: '25px'
-                                    }}
-                                    className="yai-modal-choose"
-                                >
-                                    
-                                    <p>UNBOND</p> 
-                                    <ToggleButton
-                                        
-                                        inactiveLabel={''}
-                                        activeLabel={''}
-                                        value={ isBondMode}
-                                        onToggle={() => {
-                                            setIsBondMode(!isBondMode)
-                                        }} />
-                                    <p>BOND</p>
-                                    
-                                </div>
+                                
                                 <div
                                     className="yai-modal-button"
                                     onClick={()=>{
-                                       if(isBondMode) handleBondButton()
-                                       else handleUnBondButton()
+                                    //    if(isBondMode) handleBondButton()
+                                    //    else handleUnBondButton()
                                     
                                     }}
                                     >                
-                                   {isBondMode? `Bond ${bondAmount>0 ? bondAmount : ""}`:`UnBond ${unBondAmount>0 ? unBondAmount : ""}`}
+                                   {/* {isBondMode? `Bond ${bondAmount>0 ? bondAmount : ""}`:`UnBond ${unBondAmount>0 ? unBondAmount : ""}`} */}
                                 </div>
                             </div> :<div
                             className="yai-modal-button"
-                            onClick={()=>{handleApproveButton(setIsApproved)}}
+                            onClick={()=>{approve()}}
                             >                
                             Approve
                         </div>

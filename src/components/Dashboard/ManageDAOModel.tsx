@@ -145,7 +145,7 @@ const ManageDAOModal = ({
                         <div>
                             <div className="yai-card-content">
                             <p>Wallet (Trade YAI)</p>
-                            <p>--</p>
+                            <p><BalanceBlock  balance={balance} suffix={" YAI"}/></p>
                             </div>
                             <div className="yai-card-content">
                             <p>Staged</p>
@@ -223,7 +223,7 @@ const ManageDAOModal = ({
                         <div>
                             <div className="yai-card-content">
                             <p>Wallet (Trade YAI)</p>
-                            <p>--</p>
+                            <p><BalanceBlock  balance={balance} suffix={" YAI"}/></p>
                             </div>
                             <div className="yai-card-content">
                             <p>Staged</p>

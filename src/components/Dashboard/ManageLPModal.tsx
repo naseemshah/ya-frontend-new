@@ -17,7 +17,7 @@ import {
 
 
 let handleApproveButton = (setIsApproved)=>{
-    setIsApproved(true)
+    approve()
 }
 
 let handleDepositButton = () => {
@@ -141,7 +141,7 @@ const ManageLPModal = ({
                         <div>
                             <div className="yai-card-content">
                             <p>Wallet (Trade YAI)</p>
-                            <p>--</p>
+                            <p><BalanceBlock  balance={balance} suffix={" YAI"}/></p>
                             </div>
                             <div className="yai-card-content">
                             <p>Staged</p>
@@ -210,7 +210,7 @@ const ManageLPModal = ({
                                 </div>
                             </div> :<div
                             className="yai-modal-button"
-                            onClick={()=>{handleApproveButton(setIsApproved)}}
+                            onClick={()=>{approve()}}
                             >                
                             Approve
                         </div>
@@ -219,7 +219,7 @@ const ManageLPModal = ({
                         <div>
                             <div className="yai-card-content">
                             <p>Wallet (Trade YAI)</p>
-                            <p>--</p>
+                            <p><BalanceBlock  balance={balance} suffix={" YAI"}/></p>
                             </div>
                             <div className="yai-card-content">
                             <p>Staged</p>
