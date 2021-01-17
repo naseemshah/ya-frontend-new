@@ -136,7 +136,8 @@ const ManageCouponsModal = ({
                         <div>
                             <div className="yai-card-content">
                             <p>Balance</p>
-                            <p>-.-- YAI</p>
+                            <BalanceBlock  balance={balance} suffix={" YAI"}/>
+
                             </div>
                             <div className="yai-card-content">
                             <p>Debt</p>

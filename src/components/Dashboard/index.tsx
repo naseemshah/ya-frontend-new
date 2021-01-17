@@ -650,6 +650,11 @@ function Dashboard({ hasWeb3, user, setUser }: { hasWeb3: boolean, user: string,
             userStagedBalance={userStagedBalance}
             userBondedBalance ={userBondedBalance}
             setModal = {setIsManageRewardsModal}
+            claimable={userClaimableBalance}
+            rewarded={isRewardedNegative ? new BigNumber(0) : userRewardedBalance}
+            approve={ApproveLP}
+            userUSDCBalance = {userUSDCBalance}
+            poolAddress= {poolAddress}
         />}
 
       

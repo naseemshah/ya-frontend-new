@@ -91,13 +91,21 @@ const ManageLPModal = ({
                         </div>
                         {
                             allowance.comparedTo(MAX_UINT256) === 0 ? <div>
-                                <input 
-                                    className="yai-modal-input"
-                                    onChange={(e)=>{
-                                        
-                                        isStageModeDeposite ? setDepositAmount(parseFloat(e.target.value)) : setWithdrawAmount(parseFloat(e.target.value))
-                                    }}
-                                    type="number"/>
+                                <div  className="input-container">
+                                    <input 
+                                        className="yai-modal-input"
+                                        onChange={(e)=>{
+                                            
+                                            isStageModeDeposite ? setDepositAmount(parseFloat(e.target.value)) : setWithdrawAmount(parseFloat(e.target.value))
+                                        }}
+                                        type="number"/>
+                                        <button 
+                                            className="input-container-max-button"
+                                            onClick={()=>{
+                                                
+                                            }}
+                                        >Max</button>
+                                </div>
                                 <div 
                                     style={{
                                         display: 'flex',
@@ -346,6 +354,27 @@ let Modal = styled.div`
         border-radius: 10px;
                 
     }
+
+    .input-container{
+        position: relative;
+        .input-container-max-button{
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-2px);
+            background-color: #CF0300;
+            border: none;
+            font-weight: bold;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            :hover{
+                background-color: #a50402;
+
+            }
+        }
+    }
+
 
     @media only screen and (max-width: 550px){
         width: 300px!important;

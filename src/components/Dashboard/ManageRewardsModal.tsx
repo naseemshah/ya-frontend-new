@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
-import {approve, deposit, withdraw} from '../../utils/web3';
 import BigNumber from 'bignumber.js';
 import {ESD, ESDS} from "../../constants/tokens";
 import {isPos, toBaseUnitBN} from '../../utils/number';
@@ -8,6 +7,10 @@ import { bond, unbondUnderlying } from '../../utils/web3';
 import BalanceBlock from './BalanceBlock'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import ToggleButton from 'react-toggle-button'
+import {MAX_UINT256} from "../../constants/values";
+import {claimPool} from '../../utils/web3';
+
+
 
 
 import {
@@ -16,9 +19,6 @@ import {
 
 
 
-let handleApproveButton = (setIsApproved)=>{
-    setIsApproved(true)
-}
 
 let handleClaimButton = () => {
 
@@ -37,12 +37,18 @@ type Props = {
     userStagedBalance: BigNumber,
     userBondedBalance: BigNumber,
     setModal: Function,
+    claimable: BigNumber,
+    rewarded: BigNumber,
+    approve: Function,
+    userUSDCBalance: BigNumber,
+    poolAddress: string
+
   };
 
 const ManageLPModal = ({
-    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal
+    user, balance, allowance, stagedBalance, status,userStagedBalance,userBondedBalance,setModal,claimable,rewarded,approve, userUSDCBalance, poolAddress
   }: Props) => {
-  const [claimAmount, setClaimAmount] = useState(0);
+  const [claimAmount, setClaimAmount] = useState(new BigNumber(0));
   const [LPAmount, setLPAmount] = useState(0);
 
   const [bondAmount, setBondAmount] = useState(0);
@@ -69,28 +75,43 @@ const ManageLPModal = ({
                     <div>
                        
                         {
-                            isApproved ? <div>
-                                <input 
-                                    className="yai-modal-input"
-                                    onChange={(e)=>{
-                                        
-                                        setClaimAmount(parseFloat(e.target.value))
-                                    }}
-                                    type="number"/>
+                            allowance.comparedTo(MAX_UINT256) === 0 ? <div>
+                                <div className="input-container">
+                                    <input 
+                                        className="yai-modal-input"
+                                        onChange={(e)=>{
+                                            
+                                            setClaimAmount(new BigNumber(parseFloat(e.target.value)))
+                                        }}
+                                        type="number"/>
+
+                                    <button 
+                                        className="input-container-max-button"
+                                        onClick={()=>{
+                                            setClaimAmount(claimable);
+                                        }}
+                                    >Max</button>
+                                    
+                                </div>
                                
                                 <div
                                     className="yai-modal-button"
                                     onClick={()=>{
-                                       handleClaimButton()
+                                        claimPool(
+                                            poolAddress,
+                                            toBaseUnitBN(claimAmount, ESD.decimals),
+                                            (hash) => setClaimAmount(new BigNumber(0))
+                                          );
                                        
                                     
                                     }}
                                     >                
-                                   {`Claim ${claimAmount>0 ? claimAmount : ""}`}
+                                   {`Claim ${claimAmount>new BigNumber(0) ? claimAmount : ""}`}
                                 </div>
+                               
                             </div> :<div
                             className="yai-modal-button"
-                            onClick={()=>{handleApproveButton(setIsApproved)}}
+                            onClick={()=>{approve()}}
                             >                
                             Approve
                         </div>
@@ -98,16 +119,16 @@ const ManageLPModal = ({
                         
                         <div>
                             <div className="yai-card-content">
-                            <p>Earned</p>
-                            <BalanceBlock  balance={0.0} suffix={" YAI"}/>
-                            </div>
-                            <div className="yai-card-content">
-                            <p>Claimable</p>
-                            <BalanceBlock  balance={0.0} suffix={" YAI"}/>
+                                <p>Earned</p>
+                                <BalanceBlock balance={rewarded} suffix={" YAI"} />
+                                </div>
+                                <div className="yai-card-content">
+                                <p>Claimable</p>
+                                <BalanceBlock balance={claimable} suffix={" YAI"} />
                             </div> 
                             <div className="yai-card-content">
                             <p>DAI</p>
-                            <BalanceBlock  balance={0.0} suffix={" YAI"}/>
+                            <BalanceBlock  balance={userUSDCBalance} suffix={" DAI"}/>
                             </div>
                         </div>
                     </div>
@@ -117,7 +138,7 @@ const ManageLPModal = ({
                 <div>
                        
                        {
-                           isApproved ? <div>
+                           allowance.comparedTo(MAX_UINT256) === 0 ? <div>
                                <input 
                                    className="yai-modal-input"
                                    onChange={(e)=>{
@@ -138,7 +159,7 @@ const ManageLPModal = ({
                                </div>
                            </div> :<div
                            className="yai-modal-button"
-                           onClick={()=>{handleApproveButton(setIsApproved)}}
+                           onClick={()=>{approve()}}
                            >                
                            Approve
                        </div>
@@ -146,16 +167,16 @@ const ManageLPModal = ({
                        
                        <div>
                            <div className="yai-card-content">
-                           <p>Earned</p>
-                           <BalanceBlock  balance={0.0} suffix={" YAI"}/>
-                           </div>
-                           <div className="yai-card-content">
-                           <p>Claimable</p>
-                           <BalanceBlock  balance={0.0} suffix={" YAI"}/>
+                            <p>Earned</p>
+                            <BalanceBlock balance={rewarded} suffix={" YAI"} />
+                            </div>
+                            <div className="yai-card-content">
+                            <p>Claimable</p>
+                            <BalanceBlock balance={claimable} suffix={" YAI"} />
                            </div> 
                            <div className="yai-card-content">
                            <p>DAI</p>
-                           <BalanceBlock  balance={0.0} suffix={" YAI"}/>
+                           <BalanceBlock  balance={userUSDCBalance} suffix={" DAI"}/>
                            </div>
                        </div>
                    </div>
@@ -273,6 +294,26 @@ let Modal = styled.div`
         padding: 10px;
         border-radius: 10px;
                 
+    }
+
+    .input-container{
+        position: relative;
+        .input-container-max-button{
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-2px);
+            background-color: #CF0300;
+            border: none;
+            font-weight: bold;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            :hover{
+                background-color: #a50402;
+
+            }
+        }
     }
     
     @media only screen and (max-width: 550px){
